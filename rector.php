@@ -9,8 +9,9 @@ use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
     ->withPaths([
-        __DIR__ . '/packages/goldoni/laravel-virtual-wallet',
-        __DIR__ . '/packages/goldoni/laravel-model-permissions',
+//        __DIR__ . '/packages/goldoni/laravel-virtual-wallet',
+//        __DIR__ . '/packages/goldoni/laravel-model-permissions',
+        __DIR__ . '/app',
     ])
 
     ->withSkip([
@@ -26,7 +27,7 @@ return RectorConfig::configure()
     ->withImportNames(removeUnusedImports: true)
 
     ->withSets([
-        LevelSetList::UP_TO_PHP_82,
+        LevelSetList::UP_TO_PHP_84,
         SetList::TYPE_DECLARATION,
     ])
 

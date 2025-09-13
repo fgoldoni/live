@@ -1,7 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Services\Auth\LibPhoneNormalizer;
+use App\Services\Auth\MagicLinkGeneratorInterface;
+use App\Services\Auth\PhoneNormalizerInterface;
+use App\Services\Auth\SignedUrlMagicLinkGenerator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(PhoneNormalizerInterface::class, LibPhoneNormalizer::class);
+        $this->app->singleton(MagicLinkGeneratorInterface::class, SignedUrlMagicLinkGenerator::class);
     }
 
     /**

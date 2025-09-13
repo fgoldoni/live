@@ -123,4 +123,6 @@ return [
         'store'  => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'phone_default_country' => env('APP_PHONE_DEFAULT_COUNTRY', 'DE'),
+
 ];
