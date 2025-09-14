@@ -9,7 +9,6 @@ use Core\Traits\BelongsToUser;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Model;
 
-
 class PasswordlessToken extends Model
 {
     use BelongsToUser;

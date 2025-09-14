@@ -18,7 +18,7 @@ class StevebaumanLocationCountryResolver implements CountryResolver
 
         try {
             $position = Location::get($ip);
-            $code = ($position instanceof Position && is_string($position->countryCode) && $position->countryCode !== '')
+            $code     = ($position instanceof Position && is_string($position->countryCode) && $position->countryCode !== '')
                 ? $position->countryCode
                 : $default;
         } catch (Throwable) {

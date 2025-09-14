@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use LogicException;
 use App\Contracts\Auth\MagicLinkGenerator;
 use App\Contracts\Auth\PhoneNormalizer;
 use App\Contracts\Geo\CountryResolver;
@@ -20,24 +21,28 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
 {
     public function register(): void
     {
-        $this->app->bind(StatefulGuard::class, static function (Container $app): StatefulGuard {
-            $authManager = $app->make('auth');
-            $guard = $authManager->guard(config('auth.defaults.guard', 'web'));
+        $this->app->bind(static function (Container $container): StatefulGuard {
+            $authManager = $container->make('auth');
+            $guard       = $authManager->guard(config('auth.defaults.guard', 'web'));
+
             if (! $guard instanceof StatefulGuard) {
-                throw new \LogicException('Default guard is not stateful.');
+                throw new LogicException('Default guard is not stateful.');
             }
+
             return $guard;
         });
 
-        $this->app->singleton(PhoneNormalizer::class, static function (Container $app): PhoneNormalizer {
+        $this->app->singleton(static function (Container $container): PhoneNormalizer {
             $fallback = (string) config('countries.default', 'DE');
+
             return new LibPhoneNormalizer($fallback);
         });
 
-        $this->app->singleton(MagicLinkGenerator::class, static function (Container $app): MagicLinkGenerator {
+        $this->app->singleton(static function (Container $container): MagicLinkGenerator {
             $ttl = (int) config('auth.magic_link_ttl', 15);
+
             return new SignedUrlMagicLinkGenerator(
-                $app->make(Mailer::class),
+                $container->make(Mailer::class),
                 $ttl
             );
         });

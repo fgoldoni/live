@@ -61,6 +61,7 @@ trait HasRoleScopes
     protected static function roleLabel(string $key): string
     {
         $roles = (array) config('model-permissions.roles', []);
+
         return (string) ($roles[$key] ?? ucfirst(str_replace('_', ' ', $key)));
     }
 
