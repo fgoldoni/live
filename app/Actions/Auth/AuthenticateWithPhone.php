@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 final readonly class AuthenticateWithPhone
 {
     public function __construct(
-        private StatefulGuard $guard,
+        private StatefulGuard $statefulGuard,
         private PhoneNormalizer $phoneNormalizer,
     ) {}
 
@@ -23,14 +23,14 @@ final readonly class AuthenticateWithPhone
             ? $phone
             : $this->phoneNormalizer->toE164($phone);
 
-        if (! $this->guard->attempt(['phone' => $phoneE164, 'password' => $password], $remember)) {
+        if (! $this->statefulGuard->attempt(['phone' => $phoneE164, 'password' => $password], $remember)) {
             event(new LoginFailed(null));
-            throw ValidationException::withMessages(['phone_full' => __('Authentication failed')]);
+            throw ValidationException::withMessages(['phone' => __('Authentication failed')]);
         }
 
         request()->session()->regenerate();
 
-        $user = $this->guard->user();
+        $user = $this->statefulGuard->user();
         event(new LoginSucceeded($user));
 
         return $user;

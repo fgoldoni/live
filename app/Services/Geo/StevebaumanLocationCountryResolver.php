@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Geo;
 
+use Throwable;
 use App\Contracts\Geo\CountryResolver;
 use Illuminate\Support\Str;
 use Stevebauman\Location\Facades\Location;
@@ -17,7 +18,7 @@ class StevebaumanLocationCountryResolver implements CountryResolver
         try {
             $position = Location::get($ip);
             $code = $position?->countryCode ?: $default;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $code = $default;
         }
 

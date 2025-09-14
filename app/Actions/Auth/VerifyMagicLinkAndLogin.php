@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 final readonly class VerifyMagicLinkAndLogin
 {
-    public function __construct(private StatefulGuard $guard) {}
+    public function __construct(private StatefulGuard $statefulGuard) {}
 
     public function execute(int $userId, string $plainToken): User
     {
@@ -42,7 +42,7 @@ final readonly class VerifyMagicLinkAndLogin
 
             $token->forceFill(['used_at' => CarbonImmutable::now()])->save();
 
-            $this->guard->login($user, remember: true);
+            $this->statefulGuard->login($user, remember: true);
             request()->session()->regenerate();
 
             event(new MagicLinkConsumed($user));

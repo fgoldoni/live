@@ -122,6 +122,8 @@ class extends Component {
         <x-auth-session-status class="text-center" :status="session('status')"/>
     </div>
 
+    <x-auth.validation-errors class="mb-4" />
+
     <flux:tab.group wire:model="tab" aria-label="{{ __('Authentication methods') }}">
         <flux:tabs variant="segmented">
             <flux:tab name="phone" class="cursor-pointer">

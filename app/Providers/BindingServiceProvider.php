@@ -23,12 +23,12 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
             $app['config']->get('auth.defaults.guard', 'web')
         ));
 
-        $this->app->singleton(PhoneNormalizer::class, function ($app) {
+        $this->app->singleton(function (array $app): PhoneNormalizer {
             $fallback = (string) $app['config']->get('countries.default', 'DE');
             return new LibPhoneNormalizer($fallback);
         });
 
-        $this->app->singleton(MagicLinkGenerator::class, function ($app) {
+        $this->app->singleton(function (array $app): MagicLinkGenerator {
             $ttl = (int) $app['config']->get('auth.magic_link_ttl', 15);
             return new SignedUrlMagicLinkGenerator(
                 $app->make(Mailer::class),
@@ -36,7 +36,7 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
             );
         });
 
-        $this->app->singleton(CountryResolver::class, fn () => new StevebaumanLocationCountryResolver());
+        $this->app->singleton(CountryResolver::class, fn (): StevebaumanLocationCountryResolver => new StevebaumanLocationCountryResolver());
     }
 
     public function provides(): array

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Contracts\Geo;
+declare(strict_types=1);
 
-use Illuminate\Http\Request;
+namespace App\Contracts\Geo;
 
 interface CountryResolver
 {

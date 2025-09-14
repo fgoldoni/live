@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasExtraUlid;
 use Core\Traits\BelongsToUser;
+use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,6 +23,6 @@ class PasswordlessToken extends Model
     protected $casts = [
         'expires_at' => 'datetime',
         'used_at'    => 'datetime',
-        'metadata'   => 'array',
+        'metadata'   => AsArrayObject::class,
     ];
 }

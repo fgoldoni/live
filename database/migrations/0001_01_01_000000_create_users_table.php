@@ -1,12 +1,13 @@
 <?php
 
+use Core\Traits\Database\DisableForeignKeys;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     use \Core\Traits\Database\Migration;
-    use \Core\Traits\Database\DisableForeignKeys;
+    use DisableForeignKeys;
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -19,7 +20,9 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable()->index();
             $table->string('password')->nullable();
             $table->foreignId('current_team_id')->nullable()->index();
+            $table->string('birth_date')->nullable();
             $table->rememberToken();
+            $table->timestamp('archived_at')->nullable()->index();
             $table->softDeletes();
             $table->timestamps();
         });
