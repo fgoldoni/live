@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace App\Services\Geo;
 
-use Illuminate\Http\Request;
+use App\Contracts\Geo\CountryResolver;
 use Illuminate\Support\Str;
 use Stevebauman\Location\Facades\Location;
 
-class StevebaumanLocationCountryResolver implements CountryResolverInterface
+class StevebaumanLocationCountryResolver implements CountryResolver
 {
-    public function resolve(Request $request): string
+    public function resolveIso2(?string $ip = null): ?string
     {
-        $position = Location::get($request->ip());
-        $code     = $position?->countryCode ?: config('app.phone_default_country', 'DE');
+        $default = (string) config('countries.default', 'DE');
 
-        return Str::upper($code ?: 'DE');
+        try {
+            $position = Location::get($ip);
+            $code = $position?->countryCode ?: $default;
+        } catch (\Throwable) {
+            $code = $default;
+        }
+
+        return Str::upper($code);
     }
 }

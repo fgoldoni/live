@@ -1,17 +1,14 @@
 <?php
 
-use App\Actions\Auth\AttemptLoginWithEmail;
-use App\Actions\Auth\AttemptLoginWithPhone;
-use App\Actions\Auth\SendMagicLink;
-use App\Facades\PhoneNormalizer;
-use App\Http\Requests\Auth\EmailLoginRequest;
-use App\Http\Requests\Auth\PhoneLoginRequest;
-use App\Services\Auth\LibPhoneNormalizer;
+use App\Actions\Auth\AuthenticateWithEmail;
+use App\Actions\Auth\AuthenticateWithPhone;
+use App\Actions\Auth\SendPasswordlessLoginLink;
+use App\Facades\Auth\Phone as PhoneFacade;
+use App\Facades\Geo\Country;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use Propaganistas\LaravelPhone\Rules\Phone;
-use Stevebauman\Location\Facades\Location;
 
 
 new #[Layout('components.layouts.auth')]
@@ -26,14 +23,22 @@ class extends Component {
 
     public function mount(): void
     {
-        $default = (string)config('app.phone_default_country', 'DE');
-
-        try {
-            $pos = Location::get(request()->ip());
-            $this->detectedCountry = strtoupper($pos->countryCode ?? $default);
-        } catch (\Throwable) {
-            $this->detectedCountry = $default;
-        }
+//        $user = User::first();
+//        $buyer = User::find(2);
+//        $seller = User::find(3);
+//        Wallet::for($user)->label('main')->currency('EUR')->credit('100.00');
+//        Wallet::for($buyer)->label('main')->currency('EUR')->credit('100.00');
+//        Wallet::for($user)->label('main')->currency('EUR')->debit('25.00');
+//        Wallet::for($buyer)->label('main')->currency('EUR')->transfer($seller, '35.00', ['status' => TransferStatus::PENDING]);
+//        $entries = Wallet::for($user)->label('main')->currency('EUR')->history();
+//        Wallet::for($buyer)
+//            ->label('main')->currency('EUR')
+//            ->transfer($seller, '35.00', ['status' => 'pending']);
+//        $balance = Wallet::for($user)->label('main')->currency('EUR')->balance();
+//        $wallets = Wallet::for($user)->wallets();
+//        $totals = Wallet::for($user)->totalBalanceByCurrency();
+//
+        $this->detectedCountry = Country::resolveIso2(request()->ip());
     }
 
     public function updatedEmail(string $value): void
@@ -60,7 +65,7 @@ class extends Component {
             'remember' => ['nullable', 'boolean'],
         ]);
 
-        app(AttemptLoginWithEmail::class)
+        app(AuthenticateWithEmail::class)
             ->execute($this->email, $this->password, $this->remember);
 
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
@@ -68,20 +73,20 @@ class extends Component {
 
     public function loginWithPhone(): void
     {
-        $this->phone = (string)(PhoneNormalizer::tryToE164($this->phone, $this->detectedCountry) ?? '');
+        $this->phone = (string)(PhoneFacade::tryToE164($this->phone, $this->detectedCountry) ?? '');
 
         $this->validate([
             'phone' => [
                 'required',
                 'regex:/^\+[1-9]\d{1,14}$/',
-                (new Phone)->international(),
-                Rule::exists('users', 'phone')->where(fn ($q) => $q->whereNull('deleted_at')),
+                (new Phone)->international()->lenient(),
+                Rule::exists('users', 'phone')->where(fn($q) => $q->whereNull('deleted_at')),
             ],
             'password' => ['required', 'string'],
             'remember' => ['nullable', 'boolean'],
         ]);
 
-        app(AttemptLoginWithPhone::class)
+        app(AuthenticateWithPhone::class)
             ->execute($this->phone, $this->password, $this->remember);
 
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
@@ -99,7 +104,7 @@ class extends Component {
             ],
         ]);
 
-        app(SendMagicLink::class)->execute($this->magic_email);
+        app(SendPasswordlessLoginLink::class)->execute($this->magic_email);
 
         session()->flash('status', __('If your account exists, a magic link has been sent'));
     }

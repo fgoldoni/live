@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Auth\ConsumeMagicLinkController;
+use App\Http\Controllers\Auth\VerifyAndConsumeMagicLinkController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -21,7 +21,7 @@ Route::middleware('guest')->group(function () {
     Volt::route('reset-password/{token}', 'auth.reset-password')
         ->name('password.reset');
 
-    Route::get('magic/{user}/{token}', ConsumeMagicLinkController::class)
+    Route::get('magic/{user}/{token}', VerifyAndConsumeMagicLinkController::class)
         ->middleware(['signed', 'throttle:10,1'])
         ->name('auth.magic.consume');
 });

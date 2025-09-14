@@ -4,32 +4,38 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
+use App\Contracts\Auth\PhoneNormalizer;
 use Illuminate\Support\Str;
 use Throwable;
 
-readonly class LibPhoneNormalizer implements PhoneNormalizerInterface
+final readonly class LibPhoneNormalizer implements PhoneNormalizer
 {
-    public function __construct(private ?string $fallbackCountry = null)
+    public function __construct(private ?string $fallbackCountry = null) {}
+
+    public function isE164(string $input): bool
     {
+        return (bool) preg_match('/^\+[1-9]\d{1,14}$/', trim($input));
     }
 
-    public function normalize(string $input, ?string $defaultCountry = null): string
+    public function toE164(string $input, ?string $defaultCountry = null): string
     {
-        $country = Str::upper($defaultCountry ?: $this->fallbackCountry ?: config('app.phone_default_country', 'DE'));
-
+        $country = Str::upper($defaultCountry ?: $this->fallbackCountry ?: (string) config('countries.default', 'DE'));
         return phone($input, $country)->formatE164();
     }
 
     public function tryToE164(string $input, ?string $defaultCountry = null): ?string
     {
-        if (trim($input) === '') {
+        $trimmed = trim($input);
+        if ($trimmed === '') {
             return null;
         }
 
-        $country = Str::upper($defaultCountry ?: $this->fallbackCountry ?: config('app.phone_default_country', 'DE'));
+        if ($this->isE164($trimmed)) {
+            return $trimmed;
+        }
 
         try {
-            return phone($input, $country)->formatE164();
+            return $this->toE164($trimmed, $defaultCountry);
         } catch (Throwable) {
             return null;
         }
