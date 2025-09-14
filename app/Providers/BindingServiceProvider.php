@@ -20,23 +20,24 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
 {
     public function register(): void
     {
-        $this->app->bind(StatefulGuard::class, static function (Container $container): StatefulGuard {
-            return $container['auth']->guard(
-                $container['config']->get('auth.defaults.guard', 'web')
-            );
+        $this->app->bind(StatefulGuard::class, static function (Container $app): StatefulGuard {
+            $authManager = $app->make('auth');
+            $guard = $authManager->guard(config('auth.defaults.guard', 'web'));
+            if (! $guard instanceof StatefulGuard) {
+                throw new \LogicException('Default guard is not stateful.');
+            }
+            return $guard;
         });
 
-        $this->app->singleton(PhoneNormalizer::class, static function (Container $container): PhoneNormalizer {
-            $fallback = (string) $container['config']->get('countries.default', 'DE');
-
+        $this->app->singleton(PhoneNormalizer::class, static function (Container $app): PhoneNormalizer {
+            $fallback = (string) config('countries.default', 'DE');
             return new LibPhoneNormalizer($fallback);
         });
 
-        $this->app->singleton(MagicLinkGenerator::class, static function (Container $container): MagicLinkGenerator {
-            $ttl = (int) $container['config']->get('auth.magic_link_ttl', 15);
-
+        $this->app->singleton(MagicLinkGenerator::class, static function (Container $app): MagicLinkGenerator {
+            $ttl = (int) config('auth.magic_link_ttl', 15);
             return new SignedUrlMagicLinkGenerator(
-                $container->make(Mailer::class),
+                $app->make(Mailer::class),
                 $ttl
             );
         });
@@ -44,6 +45,9 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
         $this->app->singleton(CountryResolver::class, static fn (): CountryResolver => new StevebaumanLocationCountryResolver);
     }
 
+    /**
+     * @return array<int, class-string>
+     */
     public function provides(): array
     {
         return [

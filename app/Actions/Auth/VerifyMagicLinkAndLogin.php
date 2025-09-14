@@ -17,10 +17,10 @@ use Illuminate\Validation\ValidationException;
 final readonly class VerifyMagicLinkAndLogin
 {
     public function __construct(
-        private StatefulGuard $guard,
+        private StatefulGuard $statefulGuard,
         private Session $session,
-        private Connection $db,
-        private Dispatcher $events,
+        private Connection $connection,
+        private Dispatcher $dispatcher,
     ) {
     }
 
@@ -29,7 +29,7 @@ final readonly class VerifyMagicLinkAndLogin
         $user        = User::query()->findOrFail($userId);
         $hashedToken = hash('sha256', $plainToken);
 
-        return $this->db->transaction(function () use ($user, $hashedToken): User {
+        return $this->connection->transaction(function () use ($user, $hashedToken): User {
             $token = PasswordlessToken::query()
                 ->where('user_id', $user->id)
                 ->where('token', $hashedToken)
@@ -50,10 +50,10 @@ final readonly class VerifyMagicLinkAndLogin
 
             $token->forceFill(['used_at' => CarbonImmutable::now()])->save();
 
-            $this->guard->login($user, remember: true);
+            $this->statefulGuard->login($user, remember: true);
             $this->session->regenerate();
 
-            $this->events->dispatch(new MagicLinkConsumed($user));
+            $this->dispatcher->dispatch(new MagicLinkConsumed($user));
 
             return $user;
         });

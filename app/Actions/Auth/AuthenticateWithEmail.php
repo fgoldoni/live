@@ -16,9 +16,9 @@ use Illuminate\Validation\ValidationException;
 final readonly class AuthenticateWithEmail
 {
     public function __construct(
-        private StatefulGuard $guard,
+        private StatefulGuard $statefulGuard,
         private Session $session,
-        private Dispatcher $events,
+        private Dispatcher $dispatcher,
     ) {
     }
 
@@ -26,9 +26,9 @@ final readonly class AuthenticateWithEmail
     {
         $normalizedEmail = Str::lower($email);
 
-        if (! $this->guard->attempt(['email' => $normalizedEmail, 'password' => $password], $remember)) {
+        if (! $this->statefulGuard->attempt(['email' => $normalizedEmail, 'password' => $password], $remember)) {
             $maybeUser = User::query()->whereRaw('lower(email) = ?', [$normalizedEmail])->first();
-            $this->events->dispatch(new LoginFailed($maybeUser));
+            $this->dispatcher->dispatch(new LoginFailed($maybeUser));
 
             throw ValidationException::withMessages(['email' => __('Authentication failed')]);
         }
@@ -36,8 +36,8 @@ final readonly class AuthenticateWithEmail
         $this->session->regenerate();
 
         /** @var User $user */
-        $user = $this->guard->user();
-        $this->events->dispatch(new LoginSucceeded($user));
+        $user = $this->statefulGuard->user();
+        $this->dispatcher->dispatch(new LoginSucceeded($user));
 
         return $user;
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Concerns\HasExtraUlid;
 use App\Models\Concerns\HasRoleScopes;
 use Goldoni\LaravelVirtualWallet\Traits\HasWallets;
@@ -25,7 +24,6 @@ class User extends Authenticatable
     use HasWallets;
     use HasRoleScopes;
 
-
     protected $fillable = [
         'name',
         'ulid',
@@ -35,24 +33,19 @@ class User extends Authenticatable
         'current_team_id',
     ];
 
-
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'password' => 'hashed',
         ];
     }
 
-    /**
-     * Get the user's initials.
-     */
     public function initials(): string
     {
         return Str::of($this->name)

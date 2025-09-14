@@ -4,29 +4,34 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 
 trait HasRoleScopes
 {
+    /** @param Builder<User> $builder */
     #[Scope]
     protected function superAdmins(Builder $builder): void
     {
         $builder->role(self::roleLabel('super_admin'), self::guardName());
     }
 
+    /** @param Builder<User> $builder */
     #[Scope]
     protected function managers(Builder $builder): void
     {
         $builder->role(self::roleLabel('manager'), self::guardName());
     }
 
+    /** @param Builder<User> $builder */
     #[Scope]
     protected function sellers(Builder $builder): void
     {
         $builder->role(self::roleLabel('seller'), self::guardName());
     }
 
+    /** @param Builder<User> $builder */
     #[Scope]
     protected function usersOnly(Builder $builder): void
     {
@@ -56,7 +61,6 @@ trait HasRoleScopes
     protected static function roleLabel(string $key): string
     {
         $roles = (array) config('model-permissions.roles', []);
-
         return (string) ($roles[$key] ?? ucfirst(str_replace('_', ' ', $key)));
     }
 

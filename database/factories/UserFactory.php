@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends Factory<User>
@@ -32,24 +33,23 @@ class UserFactory extends Factory
         return $this->state(fn () => ['email_verified_at' => null]);
     }
 
-
     public function withRoleKey(string $key): static
     {
         $label = $this->roleLabel($key);
 
         return $this->afterCreating(function (User $user) use ($label): void {
-            $user->assignRole($label);
+            $role = Role::findByName($label, $this->guardName());
+            $user->assignRole($role);
         });
     }
-
 
     public function withRoleLabel(string $label): static
     {
         return $this->afterCreating(function (User $user) use ($label): void {
-            $user->assignRole($label);
+            $role = Role::findByName($label, $this->guardName());
+            $user->assignRole($role);
         });
     }
-
 
     public function asSuperAdmin(): static
     {
@@ -71,7 +71,6 @@ class UserFactory extends Factory
         return $this->withRoleLabel($this->roleLabel('user'));
     }
 
-
     private function guardName(): string
     {
         return (string) config('model-permissions.guard_name', config('auth.defaults.guard', 'web'));
@@ -85,6 +84,7 @@ class UserFactory extends Factory
     private function roleLabel(string $key): string
     {
         $roles = (array) config('model-permissions.roles', []);
+
         return (string) ($roles[$key] ?? $key);
     }
 }

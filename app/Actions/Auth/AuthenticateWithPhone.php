@@ -16,19 +16,19 @@ use Illuminate\Validation\ValidationException;
 final readonly class AuthenticateWithPhone
 {
     public function __construct(
-        private StatefulGuard $guard,
+        private StatefulGuard $statefulGuard,
         private Session $session,
-        private Dispatcher $events,
-        private PhoneNormalizer $phones,
+        private Dispatcher $dispatcher,
+        private PhoneNormalizer $phoneNormalizer,
     ) {
     }
 
     public function execute(string $phone, string $password, bool $remember = false): User
     {
-        $e164 = $this->phones->isE164($phone) ? $phone : $this->phones->toE164($phone);
+        $e164 = $this->phoneNormalizer->isE164($phone) ? $phone : $this->phoneNormalizer->toE164($phone);
 
-        if (! $this->guard->attempt(['phone' => $e164, 'password' => $password], $remember)) {
-            $this->events->dispatch(new LoginFailed(null));
+        if (! $this->statefulGuard->attempt(['phone' => $e164, 'password' => $password], $remember)) {
+            $this->dispatcher->dispatch(new LoginFailed(null));
 
             throw ValidationException::withMessages(['phone' => __('Authentication failed')]);
         }
@@ -36,8 +36,8 @@ final readonly class AuthenticateWithPhone
         $this->session->regenerate();
 
         /** @var User $user */
-        $user = $this->guard->user();
-        $this->events->dispatch(new LoginSucceeded($user));
+        $user = $this->statefulGuard->user();
+        $this->dispatcher->dispatch(new LoginSucceeded($user));
 
         return $user;
     }

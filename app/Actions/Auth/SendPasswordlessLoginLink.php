@@ -13,8 +13,8 @@ use Illuminate\Support\Str;
 final readonly class SendPasswordlessLoginLink
 {
     public function __construct(
-        private MagicLinkGenerator $links,
-        private Dispatcher $events,
+        private MagicLinkGenerator $magicLinkGenerator,
+        private Dispatcher $dispatcher,
     ) {
     }
 
@@ -27,7 +27,7 @@ final readonly class SendPasswordlessLoginLink
             return;
         }
 
-        $this->links->generate($user);
-        $this->events->dispatch(new MagicLinkRequested($user));
+        $this->magicLinkGenerator->generate($user);
+        $this->dispatcher->dispatch(new MagicLinkRequested($user));
     }
 }
