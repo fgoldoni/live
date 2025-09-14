@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Session;
 
 readonly class AttemptLoginWithEmail
 {
@@ -29,7 +30,7 @@ readonly class AttemptLoginWithEmail
             ]);
         }
 
-        request()->session()->regenerate();
+        Session::regenerate();
         event(new LoginSucceeded($this->authManager->user()));
     }
 }

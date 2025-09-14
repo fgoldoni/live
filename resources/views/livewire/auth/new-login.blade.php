@@ -10,7 +10,9 @@ use App\Services\Auth\LibPhoneNormalizer;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use Propaganistas\LaravelPhone\Rules\Phone;
 use Stevebauman\Location\Facades\Location;
+
 
 new #[Layout('components.layouts.auth')]
 class extends Component {
@@ -18,7 +20,6 @@ class extends Component {
     public string $password = '';
     public bool $remember = false;
     public string $phone = '+491738779485';
-    public string $phone_full = '';
     public string $magic_email = '';
     public string $tab = 'phone';
     public string $detectedCountry = 'DE';
@@ -53,12 +54,10 @@ class extends Component {
                 'required',
                 'string',
                 'email:rfc,dns',
-                Rule::exists('users', 'email')->where(fn ($q) => $q->whereNull('deleted_at')),
+                Rule::exists('users', 'email')->where(fn($q) => $q->whereNull('deleted_at')),
             ],
             'password' => ['required', 'string'],
             'remember' => ['nullable', 'boolean'],
-        ], [
-            'email.exists' => __('Authentication failed'),
         ]);
 
         app(AttemptLoginWithEmail::class)
@@ -74,13 +73,12 @@ class extends Component {
         $this->validate([
             'phone' => [
                 'required',
-                'phone:E164',
+                'regex:/^\+[1-9]\d{1,14}$/',
+                (new Phone)->international(),
                 Rule::exists('users', 'phone')->where(fn ($q) => $q->whereNull('deleted_at')),
             ],
             'password' => ['required', 'string'],
             'remember' => ['nullable', 'boolean'],
-        ], [
-            'phone.exists' => __('Authentication failed'),
         ]);
 
         app(AttemptLoginWithPhone::class)
@@ -97,10 +95,8 @@ class extends Component {
                 'required',
                 'string',
                 'email:rfc,dns',
-                Rule::exists('users', 'email')->where(fn ($q) => $q->whereNull('deleted_at')),
+                Rule::exists('users', 'email')->where(fn($q) => $q->whereNull('deleted_at')),
             ],
-        ], [
-            'email.exists' => __('Authentication failed'),
         ]);
 
         app(SendMagicLink::class)->execute($this->magic_email);
