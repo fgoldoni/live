@@ -5,60 +5,29 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Actions\Auth\VerifyMagicLinkAndLogin;
-use Illuminate\Contracts\Auth\StatefulGuard;
-use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
 use Illuminate\Validation\ValidationException;
-use Psr\Log\LoggerInterface;
 
-final readonly class VerifyAndConsumeMagicLinkController
+final class VerifyAndConsumeMagicLinkController
 {
-    private const ROUTE_DASHBOARD = 'dashboard';
-
-    private const ROUTE_LOGIN = 'login';
-
-    private const MSG_ALREADY = 'This magic link was already used. You are signed in.';
-
-    private const MSG_INVALID = 'This magic link is invalid or already used.';
-
-    public function __construct(
-        private VerifyMagicLinkAndLogin $verifyMagicLinkAndLogin,
-        private StatefulGuard $statefulGuard,
-        private Redirector $redirector,
-        private UrlGenerator $urlGenerator,
-        private LoggerInterface $logger
-    ) {
-    }
-
     public function __invoke(Request $request, int $user, string $token): RedirectResponse
     {
         try {
-            $this->verifyMagicLinkAndLogin->execute($user, $token);
+            app(VerifyMagicLinkAndLogin::class)->execute($user, $token);
 
-            return $this->redirector->intended(
-                $this->urlGenerator->route(self::ROUTE_DASHBOARD)
-            );
+            return redirect()->intended(route('dashboard'));
         } catch (ValidationException $validationException) {
-            if ($this->statefulGuard->check() && (int) $this->statefulGuard->id() === $user) {
-                return $this->redirector
-                    ->intended($this->urlGenerator->route(self::ROUTE_DASHBOARD))
-                    ->with('status', __(self::MSG_ALREADY));
+            if (auth()->check() && (int) auth()->id() === $user) {
+                return redirect()->intended(route('dashboard'))
+                    ->with('status', __('This magic link was already used. You are signed in.'));
             }
 
-            $this->logger->warning('Magic link consumption failed', [
-                'user_id' => $user,
-                'ip' => $request->ip(),
-                'message' => $validationException->getMessage(),
-                'errors' => $validationException->errors(),
-            ]);
+            report($validationException);
 
-            return $this->redirector
-                ->to($this->urlGenerator->route(self::ROUTE_LOGIN))
-                ->withErrors([
-                    'magic' => $validationException->errors()['token'][0] ?? __(self::MSG_INVALID),
-                ]);
+            return redirect()
+                ->route('login')
+                ->withErrors(['magic' => $validationException->errors()['token'][0] ?? __('This magic link is invalid or already used.')]);
         }
     }
 }

@@ -11,6 +11,7 @@ use App\Services\Auth\LibPhoneNormalizer;
 use App\Services\Auth\SignedUrlMagicLinkGenerator;
 use App\Services\Geo\StevebaumanLocationCountryResolver;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
@@ -19,33 +20,32 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
 {
     public function register(): void
     {
-        $this->app->bind(StatefulGuard::class, fn ($app) => $app['auth']->guard(
-            $app['config']->get('auth.defaults.guard', 'web')
-        ));
+        $this->app->bind(StatefulGuard::class, fn(Container $container) => $container['auth']->guard($container['config']->get('auth.defaults.guard', 'web'))
+        );
 
-        $this->app->singleton(function (array $app): PhoneNormalizer {
-            $fallback = (string) $app['config']->get('countries.default', 'DE');
+        $this->app->singleton(function (Container $container): PhoneNormalizer {
+            $fallback = (string)$container['config']->get('countries.default', 'DE');
             return new LibPhoneNormalizer($fallback);
         });
 
-        $this->app->singleton(function (array $app): MagicLinkGenerator {
-            $ttl = (int) $app['config']->get('auth.magic_link_ttl', 15);
+        $this->app->singleton(function (Container $container): MagicLinkGenerator {
+            $ttl = (int)$container['config']->get('auth.magic_link_ttl', 15);
             return new SignedUrlMagicLinkGenerator(
-                $app->make(Mailer::class),
+                $container->make(Mailer::class),
                 $ttl
             );
         });
 
-        $this->app->singleton(CountryResolver::class, fn (): StevebaumanLocationCountryResolver => new StevebaumanLocationCountryResolver());
+        $this->app->singleton(CountryResolver::class, fn(): StevebaumanLocationCountryResolver => new StevebaumanLocationCountryResolver());
     }
 
     public function provides(): array
     {
         return [
+            StatefulGuard::class,
             PhoneNormalizer::class,
             MagicLinkGenerator::class,
             CountryResolver::class,
-            StatefulGuard::class,
         ];
     }
 }
