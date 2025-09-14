@@ -20,23 +20,28 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
 {
     public function register(): void
     {
-        $this->app->bind(StatefulGuard::class, fn(Container $container) => $container['auth']->guard($container['config']->get('auth.defaults.guard', 'web'))
-        );
+        $this->app->bind(StatefulGuard::class, static function (Container $container): StatefulGuard {
+            return $container['auth']->guard(
+                $container['config']->get('auth.defaults.guard', 'web')
+            );
+        });
 
-        $this->app->singleton(function (Container $container): PhoneNormalizer {
-            $fallback = (string)$container['config']->get('countries.default', 'DE');
+        $this->app->singleton(PhoneNormalizer::class, static function (Container $container): PhoneNormalizer {
+            $fallback = (string) $container['config']->get('countries.default', 'DE');
+
             return new LibPhoneNormalizer($fallback);
         });
 
-        $this->app->singleton(function (Container $container): MagicLinkGenerator {
-            $ttl = (int)$container['config']->get('auth.magic_link_ttl', 15);
+        $this->app->singleton(MagicLinkGenerator::class, static function (Container $container): MagicLinkGenerator {
+            $ttl = (int) $container['config']->get('auth.magic_link_ttl', 15);
+
             return new SignedUrlMagicLinkGenerator(
                 $container->make(Mailer::class),
                 $ttl
             );
         });
 
-        $this->app->singleton(CountryResolver::class, fn(): StevebaumanLocationCountryResolver => new StevebaumanLocationCountryResolver());
+        $this->app->singleton(CountryResolver::class, static fn (): CountryResolver => new StevebaumanLocationCountryResolver);
     }
 
     public function provides(): array

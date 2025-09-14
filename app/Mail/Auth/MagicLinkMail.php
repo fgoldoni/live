@@ -25,7 +25,7 @@ class MagicLinkMail extends Mailable implements ShouldQueue
 
         return $this->subject(__('Your magic sign-in link'))
             ->view('mail.auth.magic_link', [
-                'url' => $this->url,
+                'url'     => $this->url,
                 'logoUrl' => $logoUrl,
             ]);
     }

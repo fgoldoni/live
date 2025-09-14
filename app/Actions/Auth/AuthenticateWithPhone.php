@@ -7,31 +7,37 @@ namespace App\Actions\Auth;
 use App\Contracts\Auth\PhoneNormalizer;
 use App\Events\Auth\LoginFailed;
 use App\Events\Auth\LoginSucceeded;
+use App\Models\User;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Validation\ValidationException;
 
 final readonly class AuthenticateWithPhone
 {
     public function __construct(
-        private StatefulGuard $statefulGuard,
-        private PhoneNormalizer $phoneNormalizer,
-    ) {}
+        private StatefulGuard $guard,
+        private Session $session,
+        private Dispatcher $events,
+        private PhoneNormalizer $phones,
+    ) {
+    }
 
-    public function execute(string $phone, string $password, bool $remember = false): object
+    public function execute(string $phone, string $password, bool $remember = false): User
     {
-        $phoneE164 = $this->phoneNormalizer->isE164($phone)
-            ? $phone
-            : $this->phoneNormalizer->toE164($phone);
+        $e164 = $this->phones->isE164($phone) ? $phone : $this->phones->toE164($phone);
 
-        if (! $this->statefulGuard->attempt(['phone' => $phoneE164, 'password' => $password], $remember)) {
-            event(new LoginFailed(null));
+        if (! $this->guard->attempt(['phone' => $e164, 'password' => $password], $remember)) {
+            $this->events->dispatch(new LoginFailed(null));
+
             throw ValidationException::withMessages(['phone' => __('Authentication failed')]);
         }
 
-        request()->session()->regenerate();
+        $this->session->regenerate();
 
-        $user = $this->statefulGuard->user();
-        event(new LoginSucceeded($user));
+        /** @var User $user */
+        $user = $this->guard->user();
+        $this->events->dispatch(new LoginSucceeded($user));
 
         return $user;
     }

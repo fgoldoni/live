@@ -24,21 +24,21 @@ final readonly class SignedUrlMagicLinkGenerator implements MagicLinkGenerator
     public function generate(User $user): string
     {
         $plainToken = Str::random(64);
-        $hash = hash('sha256', $plainToken);
-        $expiresAt = CarbonImmutable::now()->addMinutes($this->ttlMinutes);
+        $hash       = hash('sha256', $plainToken);
+        $expiresAt  = CarbonImmutable::now()->addMinutes($this->ttlMinutes);
 
         PasswordlessToken::query()->create([
-            'user_id' => $user->id,
-            'token' => $hash,
+            'user_id'    => $user->id,
+            'token'      => $hash,
             'expires_at' => $expiresAt,
-            'metadata' => [
-                'ip' => request()->ip(),
+            'metadata'   => [
+                'ip'         => request()->ip(),
                 'user_agent' => request()->userAgent(),
             ],
         ]);
 
         $url = URL::temporarySignedRoute('auth.magic.consume', $expiresAt, [
-            'user' => $user->getKey(),
+            'user'  => $user->getKey(),
             'token' => $plainToken,
         ]);
 

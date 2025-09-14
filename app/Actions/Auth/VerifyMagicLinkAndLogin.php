@@ -9,19 +9,27 @@ use App\Models\PasswordlessToken;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Auth\StatefulGuard;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Session\Session;
+use Illuminate\Database\Connection;
 use Illuminate\Validation\ValidationException;
 
 final readonly class VerifyMagicLinkAndLogin
 {
-    public function __construct(private StatefulGuard $statefulGuard) {}
+    public function __construct(
+        private StatefulGuard $guard,
+        private Session $session,
+        private Connection $db,
+        private Dispatcher $events,
+    ) {
+    }
 
     public function execute(int $userId, string $plainToken): User
     {
-        $user = User::query()->findOrFail($userId);
+        $user        = User::query()->findOrFail($userId);
         $hashedToken = hash('sha256', $plainToken);
 
-        return DB::transaction(function () use ($user, $hashedToken): User {
+        return $this->db->transaction(function () use ($user, $hashedToken): User {
             $token = PasswordlessToken::query()
                 ->where('user_id', $user->id)
                 ->where('token', $hashedToken)
@@ -42,10 +50,10 @@ final readonly class VerifyMagicLinkAndLogin
 
             $token->forceFill(['used_at' => CarbonImmutable::now()])->save();
 
-            $this->statefulGuard->login($user, remember: true);
-            request()->session()->regenerate();
+            $this->guard->login($user, remember: true);
+            $this->session->regenerate();
 
-            event(new MagicLinkConsumed($user));
+            $this->events->dispatch(new MagicLinkConsumed($user));
 
             return $user;
         });

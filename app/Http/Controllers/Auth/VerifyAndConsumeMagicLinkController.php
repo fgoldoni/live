@@ -49,9 +49,9 @@ final readonly class VerifyAndConsumeMagicLinkController
 
             $this->logger->warning('Magic link consumption failed', [
                 'user_id' => $user,
-                'ip' => $request->ip(),
+                'ip'      => $request->ip(),
                 'message' => $validationException->getMessage(),
-                'errors' => $validationException->errors(),
+                'errors'  => $validationException->errors(),
             ]);
 
             return $this->redirector

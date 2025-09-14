@@ -8,28 +8,36 @@ use App\Events\Auth\LoginFailed;
 use App\Events\Auth\LoginSucceeded;
 use App\Models\User;
 use Illuminate\Contracts\Auth\StatefulGuard;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 final readonly class AuthenticateWithEmail
 {
-    public function __construct(private StatefulGuard $statefulGuard) {}
+    public function __construct(
+        private StatefulGuard $guard,
+        private Session $session,
+        private Dispatcher $events,
+    ) {
+    }
 
     public function execute(string $email, string $password, bool $remember = false): User
     {
         $normalizedEmail = Str::lower($email);
 
-        if (! $this->statefulGuard->attempt(['email' => $normalizedEmail, 'password' => $password], $remember)) {
+        if (! $this->guard->attempt(['email' => $normalizedEmail, 'password' => $password], $remember)) {
             $maybeUser = User::query()->whereRaw('lower(email) = ?', [$normalizedEmail])->first();
-            event(new LoginFailed($maybeUser));
+            $this->events->dispatch(new LoginFailed($maybeUser));
+
             throw ValidationException::withMessages(['email' => __('Authentication failed')]);
         }
 
-        Session::regenerate();
+        $this->session->regenerate();
 
-        $user = $this->statefulGuard->user();
-        event(new LoginSucceeded($user));
+        /** @var User $user */
+        $user = $this->guard->user();
+        $this->events->dispatch(new LoginSucceeded($user));
 
         return $user;
     }
