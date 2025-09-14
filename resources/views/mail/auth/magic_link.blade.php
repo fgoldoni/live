@@ -35,9 +35,6 @@
                             <img src="{{ $logoUrl }}" width="150" alt="Logo"
                                  style="display:block;border:0;outline:none;text-decoration:none;height:auto;max-width:180px;margin:0 auto 6px;">
                         @endif
-                        <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#667085;margin:0;">
-                            {{ config('app.name') }}
-                        </div>
                     </td>
                 </tr>
 
