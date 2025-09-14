@@ -28,10 +28,11 @@
             "spacing": "one"
         },
         "single_quote": true,
+        "blank_line_before_statement": {
+            "statements": ["if", "return"]
+        },
         "phpdoc_summary": true
     },
     "exclude": [
-        "app/Nova/Dashboards/Main.php",
-        "app/Nova/Event.php"
     ]
 }

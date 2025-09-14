@@ -16,6 +16,7 @@ readonly class LibPhoneNormalizer implements PhoneNormalizerInterface
     public function normalize(string $input, ?string $defaultCountry = null): string
     {
         $country = Str::upper($defaultCountry ?: $this->fallbackCountry ?: config('app.phone_default_country', 'DE'));
+
         return phone($input, $country)->formatE164();
     }
 

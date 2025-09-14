@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Core\Traits\BelongsToUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PasswordlessToken extends Model
 {
     use HasFactory;
+    use BelongsToUser;
 
     protected $fillable = [
         'user_id', 'token', 'expires_at', 'used_at', 'metadata',
@@ -21,9 +22,4 @@ class PasswordlessToken extends Model
         'used_at'    => 'datetime',
         'metadata'   => 'array',
     ];
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 }

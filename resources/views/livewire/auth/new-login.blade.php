@@ -3,30 +3,29 @@
 use App\Actions\Auth\AttemptLoginWithEmail;
 use App\Actions\Auth\AttemptLoginWithPhone;
 use App\Actions\Auth\SendMagicLink;
+use App\Facades\PhoneNormalizer;
 use App\Http\Requests\Auth\EmailLoginRequest;
-use App\Http\Requests\Auth\MagicLinkRequest;
 use App\Http\Requests\Auth\PhoneLoginRequest;
 use App\Services\Auth\LibPhoneNormalizer;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use Stevebauman\Location\Facades\Location;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+new #[Layout('components.layouts.auth')]
+class extends Component {
     public string $email = '';
     public string $password = '';
     public bool $remember = false;
-
     public string $phone = '+491738779485';
-
     public string $phone_full = '';
-
     public string $magic_email = '';
     public string $tab = 'phone';
     public string $detectedCountry = 'DE';
 
     public function mount(): void
     {
-        $default = (string) config('app.phone_default_country', 'DE');
+        $default = (string)config('app.phone_default_country', 'DE');
 
         try {
             $pos = Location::get(request()->ip());
@@ -48,9 +47,19 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     public function loginWithEmail(): void
     {
-        $req = app(EmailLoginRequest::class);
-
-        $this->validate($req->rules(), $req->messages(), $req->attributes());
+        $this->validate([
+            'email' => [
+                'bail',
+                'required',
+                'string',
+                'email:rfc,dns',
+                Rule::exists('users', 'email')->where(fn ($q) => $q->whereNull('deleted_at')),
+            ],
+            'password' => ['required', 'string'],
+            'remember' => ['nullable', 'boolean'],
+        ], [
+            'email.exists' => __('Authentication failed'),
+        ]);
 
         app(AttemptLoginWithEmail::class)
             ->execute($this->email, $this->password, $this->remember);
@@ -60,16 +69,22 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     public function loginWithPhone(): void
     {
-        $normalizer = app(LibPhoneNormalizer::class);
-        $this->phone_full = (string) ($normalizer->tryToE164($this->phone, $this->detectedCountry) ?? '');
+        $this->phone = (string)(PhoneNormalizer::tryToE164($this->phone, $this->detectedCountry) ?? '');
 
         $this->validate([
-            'phone_full' => 'required|phone:E164',
-            'password'   => 'required|string',
+            'phone' => [
+                'required',
+                'phone:E164',
+                Rule::exists('users', 'phone')->where(fn ($q) => $q->whereNull('deleted_at')),
+            ],
+            'password' => ['required', 'string'],
+            'remember' => ['nullable', 'boolean'],
+        ], [
+            'phone.exists' => __('Authentication failed'),
         ]);
 
         app(AttemptLoginWithPhone::class)
-            ->execute($this->phone_full, $this->password, $this->remember);
+            ->execute($this->phone, $this->password, $this->remember);
 
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
@@ -77,7 +92,15 @@ new #[Layout('components.layouts.auth')] class extends Component {
     public function sendMagic(): void
     {
         $this->validate([
-              'magic_email' => 'required|string|email:rfc,dns'
+            'magic_email' => [
+                'bail',
+                'required',
+                'string',
+                'email:rfc,dns',
+                Rule::exists('users', 'email')->where(fn ($q) => $q->whereNull('deleted_at')),
+            ],
+        ], [
+            'email.exists' => __('Authentication failed'),
         ]);
 
         app(SendMagicLink::class)->execute($this->magic_email);
@@ -95,20 +118,20 @@ new #[Layout('components.layouts.auth')] class extends Component {
     </div>
 
     <div class="mb-4">
-        <x-auth-session-status class="text-center" :status="session('status')" />
+        <x-auth-session-status class="text-center" :status="session('status')"/>
     </div>
 
     <flux:tab.group wire:model="tab" aria-label="{{ __('Authentication methods') }}">
         <flux:tabs variant="segmented">
-            <flux:tab name="phone">
+            <flux:tab name="phone" class="cursor-pointer">
                 {{ __('Phone + Password') }}
             </flux:tab>
 
-            <flux:tab name="magic">
+            <flux:tab name="magic" class="cursor-pointer">
                 {{ __('Magic link') }}
             </flux:tab>
 
-            <flux:tab name="email">
+            <flux:tab name="email" class="cursor-pointer">
                 {{ __('Email + Password') }}
             </flux:tab>
         </flux:tabs>
@@ -125,7 +148,6 @@ new #[Layout('components.layouts.auth')] class extends Component {
             @include('livewire.auth.partials.email-login')
         </flux:tab.panel>
     </flux:tab.group>
-
 
 
     <div class="mt-6 flex items-center justify-between text-sm">

@@ -7,13 +7,13 @@ namespace App\Actions\Auth;
 use App\Events\Auth\LoginFailed;
 use App\Events\Auth\LoginSucceeded;
 use App\Services\Auth\PhoneNormalizerInterface;
-use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Auth\AuthManager;
 use Illuminate\Validation\ValidationException;
 
 final readonly class AttemptLoginWithPhone
 {
     public function __construct(
-        private AuthFactory              $authFactory,
+        private AuthManager              $authManager,
         private PhoneNormalizerInterface $phoneNormalizer,
     ) {
     }
@@ -23,7 +23,7 @@ final readonly class AttemptLoginWithPhone
     {
         $normalized = $this->phoneNormalizer->normalize($phoneE164);
 
-        $guard = $this->authFactory->guard($guardName ?? config('auth.defaults.guard', 'web'));
+        $guard = $this->authManager->guard($guardName ?? config('auth.defaults.guard', 'web'));
 
         if (! $guard->attempt(['phone' => $normalized, 'password' => $password], $remember)) {
             event(new LoginFailed(null));

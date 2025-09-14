@@ -2,14 +2,13 @@
     <flux:field>
         <flux:input.group>
             <flux:select variant="listbox" searchable wire:model="detectedCountry" class="max-w-fit" aria-label="{{ __('Country') }}">
-                <flux:select.option value="DE">🇩🇪 DE (+49)</flux:select.option>
-                <flux:select.option value="FR">🇫🇷 FR (+33)</flux:select.option>
-                <flux:select.option value="BE">🇧🇪 BE (+32)</flux:select.option>
-                <flux:select.option value="CM">🇨🇲 CM (+237)</flux:select.option>
-                <flux:select.option value="CI">🇨🇮 CI (+225)</flux:select.option>
-                <flux:select.option value="US">🇺🇸 US (+1)</flux:select.option>
-                <flux:select.option value="CA">🇨🇦 CA (+1)</flux:select.option>
+                @foreach(collect(config('countries.supported'))->sortBy('name') as $code => $country)
+                    <flux:select.option value="{{ $code }}">
+                        {{ $country['emoji'] }} {{ $country['name'] }} ({{ $country['prefix'] }})
+                    </flux:select.option>
+                @endforeach
             </flux:select>
+
 
             <flux:input
                 wire:model.defer="phone"
@@ -19,7 +18,7 @@
                 placeholder="{{ __('173 8779485') }}"
             />
         </flux:input.group>
-        <flux:error name="phone_full" />
+        <flux:error name="phone" />
     </flux:field>
     <flux:input
         wire:model.defer="password"

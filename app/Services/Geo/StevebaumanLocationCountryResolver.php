@@ -14,6 +14,7 @@ class StevebaumanLocationCountryResolver implements CountryResolverInterface
     {
         $position = Location::get($request->ip());
         $code     = $position?->countryCode ?: config('app.phone_default_country', 'DE');
+
         return Str::upper($code ?: 'DE');
     }
 }

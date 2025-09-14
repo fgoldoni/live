@@ -37,6 +37,7 @@ readonly class SignedUrlMagicLinkGenerator implements MagicLinkGeneratorInterfac
             'token' => $plainToken,
         ]);
         $this->mailer->to($user->email)->queue(new MagicLinkMail($url));
+
         return $url;
     }
 }

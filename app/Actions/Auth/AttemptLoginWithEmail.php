@@ -7,20 +7,21 @@ namespace App\Actions\Auth;
 use App\Events\Auth\LoginFailed;
 use App\Events\Auth\LoginSucceeded;
 use App\Models\User;
-use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Auth\AuthManager;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class AttemptLoginWithEmail
+readonly class AttemptLoginWithEmail
 {
-    public function __construct(private readonly StatefulGuard $statefulGuard)
+    public function __construct(private AuthManager $authManager)
     {
     }
 
     public function execute(string $email, string $password, bool $remember = false): void
     {
         $email = Str::lower($email);
-        if (! $this->statefulGuard->attempt(['email' => $email, 'password' => $password], $remember)) {
+
+        if (! $this->authManager->attempt(['email' => $email, 'password' => $password], $remember)) {
             $user = User::query()->whereRaw('lower(email) = ?', [$email])->first();
             event(new LoginFailed($user));
             throw ValidationException::withMessages([
@@ -29,6 +30,6 @@ class AttemptLoginWithEmail
         }
 
         request()->session()->regenerate();
-        event(new LoginSucceeded($this->statefulGuard->user()));
+        event(new LoginSucceeded($this->authManager->user()));
     }
 }
