@@ -1,6 +1,5 @@
 <?php
 
-use App\Actions\Auth\AuthenticateWithEmail;
 use App\Actions\Auth\AuthenticateWithPhone;
 use App\Actions\Auth\SendPasswordlessLoginLink;
 use App\Facades\Auth\Phone as PhoneFacade;
@@ -10,15 +9,12 @@ use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use Propaganistas\LaravelPhone\Rules\Phone;
 
-
-new #[Layout('components.layouts.auth')]
-class extends Component {
-    public string $email = '';
+new #[Layout('components.layouts.auth')] class extends Component {
+    public string $phone = '';
     public string $password = '';
     public bool $remember = false;
-    public string $phone = '+491738779485';
-    public string $magic_email = '';
-    public string $tab = 'phone';
+    public string $magicEmail = '';
+    public string $method = 'phone';
     public string $detectedCountry = 'DE';
 
     public function mount(): void
@@ -26,34 +22,9 @@ class extends Component {
         $this->detectedCountry = Country::resolveIso2(request()->ip());
     }
 
-    public function updatedEmail(string $value): void
+    public function selectMethod(string $method): void
     {
-        $this->email = strtolower($value);
-    }
-
-    public function updatedMagicEmail(string $value): void
-    {
-        $this->magic_email = strtolower($value);
-    }
-
-    public function loginWithEmail(): void
-    {
-        $this->validate([
-            'email' => [
-                'bail',
-                'required',
-                'string',
-                'email:rfc,dns',
-                Rule::exists('users', 'email')->where(fn($q) => $q->whereNull('deleted_at')),
-            ],
-            'password' => ['required', 'string'],
-            'remember' => ['nullable', 'boolean'],
-        ]);
-
-        app(AuthenticateWithEmail::class)
-            ->execute($this->email, $this->password, $this->remember);
-
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->method = $method;
     }
 
     public function loginWithPhone(): void
@@ -71,8 +42,7 @@ class extends Component {
             'remember' => ['nullable', 'boolean'],
         ]);
 
-        app(AuthenticateWithPhone::class)
-            ->execute($this->phone, $this->password, $this->remember);
+        app(AuthenticateWithPhone::class)->execute($this->phone, $this->password, $this->remember);
 
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
@@ -80,7 +50,7 @@ class extends Component {
     public function sendMagic(): void
     {
         $this->validate([
-            'magic_email' => [
+            'magicEmail' => [
                 'bail',
                 'required',
                 'string',
@@ -89,7 +59,7 @@ class extends Component {
             ],
         ]);
 
-        app(SendPasswordlessLoginLink::class)->execute($this->magic_email);
+        app(SendPasswordlessLoginLink::class)->execute($this->magicEmail);
 
         session()->flash('status', __('If your account exists, a magic link has been sent'));
     }
@@ -109,34 +79,25 @@ class extends Component {
 
     <x-auth.validation-errors class="mb-4" />
 
-    <flux:tab.group wire:model="tab" aria-label="{{ __('Authentication methods') }}">
-        <flux:tabs variant="segmented">
-            <flux:tab name="phone" class="cursor-pointer">
+    <div class="w-full">
+        <flux:button.group class="w-full">
+            <flux:button class="w-full" wire:click="selectMethod('phone')" :variant="$method === 'phone' ? 'primary' : null">
                 {{ __('Phone + Password') }}
-            </flux:tab>
+            </flux:button>
+            <flux:button class="w-full" wire:click="selectMethod('magic')" :variant="$method === 'magic' ? 'primary' : null">
+                {{ __('Email') }}
+            </flux:button>
+        </flux:button.group>
+    </div>
 
-            <flux:tab name="magic" class="cursor-pointer">
-                {{ __('Magic link') }}
-            </flux:tab>
-
-            <flux:tab name="email" class="cursor-pointer">
-                {{ __('Email + Password') }}
-            </flux:tab>
-        </flux:tabs>
-
-        <flux:tab.panel name="phone">
+    <div class="mt-4">
+        <div x-data x-show="$wire.get('method') === 'phone'">
             @include('livewire.auth.partials.phone-login')
-        </flux:tab.panel>
-
-        <flux:tab.panel name="magic">
+        </div>
+        <div x-data x-show="$wire.get('method') === 'magic'">
             @include('livewire.auth.partials.magic-link-login')
-        </flux:tab.panel>
-
-        <flux:tab.panel name="email">
-            @include('livewire.auth.partials.email-login')
-        </flux:tab.panel>
-    </flux:tab.group>
-
+        </div>
+    </div>
 
     <div class="mt-6 flex items-center justify-between text-sm">
         @if (Route::has('password.request'))

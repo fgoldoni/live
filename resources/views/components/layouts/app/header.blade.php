@@ -123,7 +123,7 @@
         @fluxScripts
 
         @persist('toast')
-            <flux:toast />
+            <flux:toast position="top end"/>
         @endpersist
     </body>
 </html>

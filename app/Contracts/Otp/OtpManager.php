@@ -21,5 +21,12 @@ interface OtpManager
 
     public function confirm(User $user, string $code): void;
 
-    public function markAccountVerified(User $user): void;
+    public function markEmailVerified(User $user): void;
+
+    public function markPhoneVerified(User $user): void;
+
+    /**
+     * @return array{email:?string,phone:?string,needsEmail:bool,needsPhone:bool}
+     */
+    public function requirements(User $user): array;
 }

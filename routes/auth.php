@@ -27,7 +27,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Volt::route('verify-email', 'auth.verify-otp')
+    Volt::route('verify-email', 'auth.verify-email')
         ->name('verification.notice');
 
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
@@ -36,6 +36,12 @@ Route::middleware('auth')->group(function () {
 
     Volt::route('confirm-password', 'auth.confirm-password')
         ->name('password.confirm');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Volt::route('otp/verify', 'otp.verify')->name('otp.verify');
+    Volt::route('otp/verify-email', 'otp.verify-email')->name('otp.verify-email');
+    Volt::route('otp/verify-phone', 'otp.verify-phone')->name('otp.verify-phone');
 });
 
 Route::post('logout', App\Livewire\Actions\Logout::class)

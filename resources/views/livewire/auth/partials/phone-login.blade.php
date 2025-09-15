@@ -4,7 +4,7 @@
             <flux:select variant="listbox" searchable wire:model="detectedCountry" class="max-w-fit" aria-label="{{ __('Country') }}">
                 @foreach(collect(config('countries.supported'))->sortBy('name') as $code => $country)
                     <flux:select.option value="{{ $code }}">
-                        {{ $country['emoji'] }} {{ $country['name'] }} ({{ $country['prefix'] }})
+                        {{ $country['emoji'] }} {{ $code }} ({{ $country['prefix'] }})
                     </flux:select.option>
                 @endforeach
             </flux:select>

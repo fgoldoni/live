@@ -18,8 +18,9 @@ return new class extends Migration {
             $this->addAvatar($table);
             $table->string('phone')->nullable()->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable()->index();
+            $table->timestamp('phone_verified_at')->nullable()->index();
             $table->string('password')->nullable();
-            $table->foreignId('current_team_id')->nullable()->index();
+//            $table->foreignId('current_team_id')->nullable()->index();
             $table->string('birth_date')->nullable();
             $table->rememberToken();
             $table->timestamp('archived_at')->nullable()->index();

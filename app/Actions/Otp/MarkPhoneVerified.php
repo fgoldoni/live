@@ -6,10 +6,10 @@ namespace App\Actions\Otp;
 
 use App\Models\User;
 
-final readonly class MarkAccountVerified
+final readonly class MarkPhoneVerified
 {
     public function execute(User $user): void
     {
-        $user->touch('email_verified_at');
+        $user->touch('phone_verified_at');
     }
 }
