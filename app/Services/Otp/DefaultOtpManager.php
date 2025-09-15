@@ -22,6 +22,7 @@ final readonly class DefaultOtpManager implements OtpManager
         private MarkAccountVerified $markAccountVerified
     ) {
     }
+
     /**
      * @return array<int,string>
      */

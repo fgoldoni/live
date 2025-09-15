@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Notifications\Channels\WhatsAppChannel;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\VonageMessage;
@@ -13,6 +14,7 @@ use Spatie\OneTimePasswords\Notifications\OneTimePasswordNotification;
 
 final class CustomOneTimePasswordNotification extends OneTimePasswordNotification implements ShouldQueue
 {
+    use Queueable;
     /**
      * @param array<int,string> $channels
      */
@@ -28,7 +30,7 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
      */
     public function via(object $notifiable): array
     {
-        return array_map(fn ($c) => $c === 'whatsapp' ? WhatsAppChannel::class : $c, $this->channels);
+        return array_map(fn (string $c): string => $c === 'whatsapp' ? WhatsAppChannel::class : $c, $this->channels);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -51,6 +53,7 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
     public function toWhatsapp(object $notifiable): array
     {
         $to = method_exists($notifiable, 'routeNotificationForWhatsapp') ? (string) $notifiable->routeNotificationForWhatsapp($this) : (string) ($notifiable->phone ?? '');
+
         return ['to' => $to, 'text' => __('Your code is') . ' ' . $this->oneTimePassword->password];
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Contracts\Otp\OtpManager;
 use App\Models\Concerns\HasExtraUlid;
 use App\Models\Concerns\HasRoleScopes;
 use Goldoni\LaravelVirtualWallet\Traits\HasWallets;
