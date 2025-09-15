@@ -4,23 +4,34 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use LogicException;
 use App\Contracts\Auth\MagicLinkGenerator;
 use App\Contracts\Auth\PhoneNormalizer;
 use App\Contracts\Geo\CountryResolver;
+use App\Contracts\Notifications\SmsSender as SmsSenderContract;
+use App\Contracts\Notifications\WhatsAppClient as WhatsAppClientContract;
+use App\Contracts\Otp\OtpManager as OtpManagerContract;
 use App\Services\Auth\LibPhoneNormalizer;
 use App\Services\Auth\SignedUrlMagicLinkGenerator;
 use App\Services\Geo\StevebaumanLocationCountryResolver;
+use App\Services\Notifications\MetaCloudClient;
+use App\Services\Notifications\VonageSmsSender;
+use App\Services\Otp\DefaultOtpManager;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
+use LogicException;
+use Illuminate\Http\Client\Factory as HttpFactory;
 
 final class BindingServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     public function register(): void
     {
+        $this->app->singleton(WhatsAppClientContract::class, static fn (Container $container): MetaCloudClient => new MetaCloudClient($container->make(HttpFactory::class)));
+        $this->app->singleton(SmsSenderContract::class, VonageSmsSender::class);
+        $this->app->singleton(OtpManagerContract::class, DefaultOtpManager::class);
+
         $this->app->bind(static function (Container $container): StatefulGuard {
             $authManager = $container->make('auth');
             $guard       = $authManager->guard(config('auth.defaults.guard', 'web'));
@@ -60,6 +71,9 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
             PhoneNormalizer::class,
             MagicLinkGenerator::class,
             CountryResolver::class,
+            WhatsAppClientContract::class,
+            OtpManagerContract::class,
+            SmsSenderContract::class,
         ];
     }
 }

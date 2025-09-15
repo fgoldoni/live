@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Otp\OtpManager;
 use App\Models\Concerns\HasExtraUlid;
 use App\Models\Concerns\HasRoleScopes;
 use Goldoni\LaravelVirtualWallet\Traits\HasWallets;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory;
     use Notifiable;
@@ -23,6 +27,7 @@ class User extends Authenticatable
     use SoftDeletes;
     use HasWallets;
     use HasRoleScopes;
+    use HasOneTimePasswords;
 
     protected $fillable = [
         'name',
@@ -53,5 +58,15 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    public function routeNotificationForVonage(Notification $notification): string
+    {
+        return (string) $this->phone;
+    }
+
+    public function routeNotificationForWhatsapp(Notification $notification): string
+    {
+        return (string) $this->phone;
     }
 }

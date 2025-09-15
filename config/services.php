@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'vonage' => [
+        'key' => env('VONAGE_KEY', ''),
+        'secret' => env('VONAGE_SECRET', ''),
+        'sms_from' => env('VONAGE_FROM', ''),
+    ],
+    'meta_wa' => [
+        'token' => env('META_WA_TOKEN', ''),
+        'phone_number_id' => env('META_WA_PHONE_NUMBER_ID', ''),
+        'template' => env('META_WA_TEMPLATE', ''),
+    ],
+
 ];
