@@ -21,9 +21,9 @@ use Illuminate\Notifications\Notification;
  *   template?: WhatsAppTemplate
  * }
  */
-final class WhatsAppChannel
+final readonly class WhatsAppChannel
 {
-    public function __construct(private WhatsAppClient $client)
+    public function __construct(private WhatsAppClient $whatsAppClient)
     {
     }
 
@@ -42,26 +42,29 @@ final class WhatsAppChannel
         }
 
         if (isset($data['template']) && is_array($data['template'])) {
-            $t = $data['template'];
+            $t    = $data['template'];
             $name = (string) ($t['name'] ?? '');
+
             if ($name === '') {
                 return;
             }
 
-            $this->client->sendTemplate(
+            $this->whatsAppClient->sendTemplate(
                 $to,
                 $name,
                 (array) ($t['vars'] ?? []),
                 (array) ($t['urlParams'] ?? []),
-                isset($t['ttl']) ? (int) $t['ttl'] : null,
+                $t['ttl'] ?? null,
                 (string) ($t['language'] ?? 'fr')
             );
+
             return;
         }
 
         $text = (string) ($data['text'] ?? '');
+
         if ($text !== '') {
-            $this->client->sendText($to, $text);
+            $this->whatsAppClient->sendText($to, $text);
         }
     }
 }

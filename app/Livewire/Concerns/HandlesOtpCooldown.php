@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Concerns;
 
-use Throwable;
 use App\Facades\Otp;
 use Flux\Flux;
 
@@ -21,7 +20,7 @@ trait HandlesOtpCooldown
         if ($this->userId !== 0) {
             try {
                 $this->cooldown = Otp::remainingCooldown($this->userId);
-            } catch (Throwable) {
+            } catch (\Throwable) {
                 $this->cooldown = 0;
             }
         }
@@ -41,7 +40,7 @@ trait HandlesOtpCooldown
             Flux::toast(text: __('Please wait before requesting a new code'), variant: 'warning');
 
             return true;
-        } catch (Throwable) {
+        } catch (\Throwable) {
             Flux::toast(text: __('Cooldown check failed'), variant: 'error');
 
             return true;

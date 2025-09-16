@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use libphonenumber\PhoneNumberUtil;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Permission\Traits\HasRoles;
+use Throwable;
 
 /**
  * @property-read bool         $is_african_phone
@@ -78,6 +79,7 @@ class User extends Authenticatable
     {
         return (string) $this->phone;
     }
+
     /** @return Attribute<?string, never> */
     protected function phoneCountryIso2(): Attribute
     {
@@ -95,12 +97,13 @@ class User extends Authenticatable
                     $number = $phoneNumberUtil->parse($phone);
 
                     return strtoupper((string) $phoneNumberUtil->getRegionCodeForNumber($number));
-                } catch (\Throwable) {
+                } catch (Throwable) {
                     return null;
                 }
             }
         );
     }
+
     /** @return Attribute<?string, never> */
     protected function isAfricanPhone(): Attribute
     {
