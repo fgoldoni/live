@@ -9,16 +9,19 @@ use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\Response;
 use InvalidArgumentException;
 
+/**
+ * @phpstan-type WaPayload array<string, mixed>
+ */
 final class MetaCloudClient implements WhatsAppClient
 {
     public function __construct(
-        private readonly HttpFactory $httpFactory,
+        private HttpFactory $http,
         private string $apiUrl = '',
         private string $accessToken = '',
         private string $phoneNumberId = ''
     ) {
-        $this->apiUrl        = $this->apiUrl ?: (string) config('services.whatsapp.api_url', '');
-        $this->accessToken   = $this->accessToken ?: (string) config('services.whatsapp.access_token', '');
+        $this->apiUrl        = $this->apiUrl        ?: (string) config('services.whatsapp.api_url', '');
+        $this->accessToken   = $this->accessToken   ?: (string) config('services.whatsapp.access_token', '');
         $this->phoneNumberId = $this->phoneNumberId ?: (string) config('services.whatsapp.phone_number_id', '');
 
         if ($this->apiUrl === '' || $this->accessToken === '' || $this->phoneNumberId === '') {
@@ -30,14 +33,18 @@ final class MetaCloudClient implements WhatsAppClient
     {
         $payload = [
             'messaging_product' => 'whatsapp',
-            'to'                => $this->normalizePhone($to),
-            'type'              => 'text',
-            'text'              => ['body' => $text],
+            'to'   => $this->normalizePhone($to),
+            'type' => 'text',
+            'text' => ['body' => $text],
         ];
 
         return $this->sendRequest($payload)->successful();
     }
 
+    /**
+     * @param list<string> $vars
+     * @param list<string> $urlParams
+     */
     public function sendTemplate(
         string $to,
         string $templateName,
@@ -52,7 +59,7 @@ final class MetaCloudClient implements WhatsAppClient
             $components[] = [
                 'type'       => 'body',
                 'parameters' => array_map(
-                    static fn ($v): array => ['type' => 'text', 'text' => (string) $v],
+                    static fn (string $v) => ['type' => 'text', 'text' => $v],
                     array_values($vars)
                 ),
             ];
@@ -64,16 +71,16 @@ final class MetaCloudClient implements WhatsAppClient
                     'type'       => 'button',
                     'sub_type'   => 'URL',
                     'index'      => $index,
-                    'parameters' => [['type' => 'text', 'text' => (string) $param]],
+                    'parameters' => [['type' => 'text', 'text' => $param]],
                 ];
             }
         }
 
         $payload = [
             'messaging_product' => 'whatsapp',
-            'to'                => $this->normalizePhone($to),
-            'type'              => 'template',
-            'template'          => [
+            'to'       => $this->normalizePhone($to),
+            'type'     => 'template',
+            'template' => [
                 'name'       => $templateName,
                 'language'   => ['code' => $language],
                 'components' => $components,
@@ -87,11 +94,12 @@ final class MetaCloudClient implements WhatsAppClient
         return $this->sendRequest($payload)->successful();
     }
 
+    /** @param WaPayload $payload */
     private function sendRequest(array $payload): Response
     {
         $endpoint = rtrim($this->apiUrl, '/') . '/' . $this->phoneNumberId . '/messages';
 
-        return $this->httpFactory
+        return $this->http
             ->withToken($this->accessToken)
             ->acceptJson()
             ->asJson()

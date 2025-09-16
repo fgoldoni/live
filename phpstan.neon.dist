@@ -3,7 +3,6 @@ includes:
   - vendor/nesbot/carbon/extension.neon
 
 parameters:
-  # Increase progressively (5 → 7 → 9 → 10)
   level: 7
 
   paths:
@@ -14,23 +13,19 @@ parameters:
     - database/seeders
     - routes
 
-  # Cache directory writable in Sail
   tmpDir: storage/framework/cache/phpstan
-
-  # Do not always trust PHPDoc types as certain
   treatPhpDocTypesAsCertain: false
-  # Prevent unmatched ignoreErrors from failing the analysis
   reportUnmatchedIgnoredErrors: false
 
   ignoreErrors:
+    - message: '#Trait App\\Livewire\\Concerns\\HandlesOtpCooldown is used zero times and is not analysed#'
+      paths:
+        - app/Livewire/Concerns/HandlesOtpCooldown.php
+
     - '#Class .* uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types: TFactory#'
-    # Spatie Permission: role() scope not recognized
     - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::role#'
-    # Livewire dynamic helpers (dispatch, dispatchBrowserEvent, js)
     - '#Call to an undefined method Livewire\\Component::(dispatch|dispatchBrowserEvent|js)#'
-    # Nova field chainable methods (sortable, filterable, rules, etc.)
     - '#Call to an undefined method Laravel\\Nova\\Fields\\.*::(sortable|filterable|help|onlyOnIndex|onlyOnForms|hideFromIndex|rules)#'
-    # Container helper sometimes not resolved
     - '#Call to an undefined method Illuminate\\Contracts\\Container\\Container::makeWith#'
 
   excludePaths:

@@ -7,9 +7,23 @@ namespace App\Notifications\Channels;
 use App\Contracts\Notifications\WhatsAppClient;
 use Illuminate\Notifications\Notification;
 
-final readonly class WhatsAppChannel
+/**
+ * @phpstan-type WhatsAppTemplate array{
+ *   name: string,
+ *   vars?: list<string>,
+ *   urlParams?: list<string>,
+ *   ttl?: int,
+ *   language?: string
+ * }
+ * @phpstan-type WhatsAppPayload array{
+ *   to?: string,
+ *   text?: string,
+ *   template?: WhatsAppTemplate
+ * }
+ */
+final class WhatsAppChannel
 {
-    public function __construct(private WhatsAppClient $whatsAppClient)
+    public function __construct(private WhatsAppClient $client)
     {
     }
 
@@ -19,22 +33,22 @@ final readonly class WhatsAppChannel
             return;
         }
 
+        /** @var WhatsAppPayload $data */
         $data = (array) $notification->toWhatsApp($notifiable);
-        $to   = $data['to'] ?? $notifiable->routeNotificationForWhatsApp() ?? '';
+        $to   = (string) ($data['to'] ?? ($notifiable->routeNotificationForWhatsApp() ?? ''));
 
         if ($to === '') {
             return;
         }
 
         if (isset($data['template']) && is_array($data['template'])) {
-            $t    = $data['template'];
+            $t = $data['template'];
             $name = (string) ($t['name'] ?? '');
-
             if ($name === '') {
                 return;
             }
 
-            $this->whatsAppClient->sendTemplate(
+            $this->client->sendTemplate(
                 $to,
                 $name,
                 (array) ($t['vars'] ?? []),
@@ -42,16 +56,12 @@ final readonly class WhatsAppChannel
                 isset($t['ttl']) ? (int) $t['ttl'] : null,
                 (string) ($t['language'] ?? 'fr')
             );
-
             return;
         }
 
         $text = (string) ($data['text'] ?? '');
-
-        if ($text === '') {
-            return;
+        if ($text !== '') {
+            $this->client->sendText($to, $text);
         }
-
-        $this->whatsAppClient->sendText($to, $text);
     }
 }

@@ -18,6 +18,10 @@ use libphonenumber\PhoneNumberUtil;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @property-read bool         $is_african_phone
+ * @property-read string|null  $phone_country_iso2
+ */
 class User extends Authenticatable
 {
     use HasFactory;
@@ -74,7 +78,7 @@ class User extends Authenticatable
     {
         return (string) $this->phone;
     }
-
+    /** @return Attribute<?string, never> */
     protected function phoneCountryIso2(): Attribute
     {
         return Attribute::make(
@@ -91,18 +95,19 @@ class User extends Authenticatable
                     $number = $phoneNumberUtil->parse($phone);
 
                     return strtoupper((string) $phoneNumberUtil->getRegionCodeForNumber($number));
-                } catch (Throwable) {
+                } catch (\Throwable) {
                     return null;
                 }
             }
         );
     }
-
+    /** @return Attribute<?string, never> */
     protected function isAfricanPhone(): Attribute
     {
         return Attribute::make(
             get: function (): bool {
-                $iso2 = $this->phone_country_iso2;
+                /** @var string|null $iso2 */
+                $iso2 = $this->getAttribute('phone_country_iso2');
 
                 if (! $iso2) {
                     return false;
