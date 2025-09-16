@@ -14,8 +14,9 @@ use Spatie\OneTimePasswords\Notifications\OneTimePasswordNotification;
 final class CustomOneTimePasswordNotification extends OneTimePasswordNotification
 {
     use Queueable;
+
     /**
-     * @param array<int,string> $channels
+     * @param array<int, string> $channels
      */
     public function __construct(
         OneTimePassword $oneTimePassword,
@@ -24,12 +25,13 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
         parent::__construct($oneTimePassword);
     }
 
-    /**
-     * @return array<string>
-     */
+    /** @return array<string> */
     public function via(object $notifiable): array
     {
-        return array_map(fn (string $c): string => $c === 'WhatsApp' ? WhatsAppChannel::class : $c, $this->channels);
+        return array_map(
+            static fn (string $c): string => $c === 'WhatsApp' ? WhatsAppChannel::class : $c,
+            $this->channels
+        );
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -43,16 +45,43 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
 
     public function toVonage(object $notifiable): VonageMessage
     {
-        return (new VonageMessage)->content(__('Your code is') . ' ' . $this->oneTimePassword->password);
+        return (new VonageMessage)
+            ->content(__('Your code is') . ' ' . $this->oneTimePassword->password);
     }
 
     /**
-     * @return array{to:string,text:string}
+     * WhatsApp template payload for our custom channel.
+     *
+     * @return array{
+     *   messaging_product:'whatsapp',
+     *   to: string,
+     *   type:'template',
+     *   template: array{
+     *     name: string,
+     *     vars: array{0:string,1:string,2:int},
+     *     urlParams: array<int,string>
+     *   }
+     * }
      */
     public function toWhatsapp(object $notifiable): array
     {
-        $to = method_exists($notifiable, 'routeNotificationForWhatsapp') ? (string) $notifiable->routeNotificationForWhatsapp($this) : (string) ($notifiable->phone ?? '');
+        $to = method_exists($notifiable, 'routeNotificationForWhatsapp')
+            ? (string) $notifiable->routeNotificationForWhatsapp($this)
+            : (string) (data_get($notifiable, 'phone', ''));
 
-        return ['to' => $to, 'text' => __('Your code is') . ' ' . $this->oneTimePassword->password];
+        $name = (string) data_get($notifiable, 'name', 'User');
+        $code = (string) $this->oneTimePassword->password;
+        $ttl  = (int) config('one-time-passwords.default_expires_in_minutes', 10);
+
+        return [
+            'messaging_product' => 'whatsapp',
+            'to'                => $to,
+            'type'              => 'template',
+            'template'          => [
+                'name'      => 'account_otp_verification_2',
+                'vars'      => [$name, $code, $ttl],
+                'urlParams' => [$code],
+            ],
+        ];
     }
 }

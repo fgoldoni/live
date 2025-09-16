@@ -24,6 +24,7 @@ final class MetaCloudClient implements WhatsAppClient
         $this->accessToken   = $this->accessToken ?: (string) config('services.whatsapp.access_token', '');
         $this->phoneNumberId = $this->phoneNumberId ?: (string) config('services.whatsapp.phone_number_id', '');
 
+
         if ($this->apiUrl === '' || $this->accessToken === '' || $this->phoneNumberId === '') {
             throw new InvalidArgumentException('WhatsApp Cloud API configuration is missing.');
         }
@@ -51,7 +52,9 @@ final class MetaCloudClient implements WhatsAppClient
         array $vars = [],
         array $urlParams = [],
         ?int $ttlSeconds = null,
-        string $language = 'fr'
+        string $language = 'en_US',
+        ?string           $webhookUrl = null,
+        string            $webhookVersion = 'v1',
     ): bool {
         $components = [];
 
@@ -69,9 +72,9 @@ final class MetaCloudClient implements WhatsAppClient
             foreach (array_values($urlParams) as $index => $param) {
                 $components[] = [
                     'type'       => 'button',
-                    'sub_type'   => 'URL',
+                    'sub_type'   => 'copy_code',
                     'index'      => $index,
-                    'parameters' => [['type' => 'text', 'text' => $param]],
+                    'parameters' => [['type' => 'coupon_code', 'coupon_code' => $param]],
                 ];
             }
         }
@@ -90,6 +93,12 @@ final class MetaCloudClient implements WhatsAppClient
         if ($ttlSeconds !== null) {
             $payload['message_send_ttl_seconds'] = $ttlSeconds;
         }
+
+        if ($webhookUrl !== null) {
+            $payload['webhook_url']     = $webhookUrl;
+            $payload['webhook_version'] = $webhookVersion;
+        }
+
 
         return $this->sendRequest($payload)->successful();
     }

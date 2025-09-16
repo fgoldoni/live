@@ -22,6 +22,8 @@ interface WhatsAppClient
         array $vars = [],
         array $urlParams = [],
         ?int $ttlSeconds = null,
-        string $language = 'fr'
+        string $language = 'en_US',
+        ?string           $webhookUrl = null,
+        string            $webhookVersion = 'v1',
     ): bool;
 }

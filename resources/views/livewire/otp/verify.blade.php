@@ -71,8 +71,8 @@ new #[Layout('components.layouts.auth')] class extends Component {
             $this->redirectRoute($route, navigate: true);
         } catch (\Throwable $e) {
 
-            dd($e->getMessage());
-            Flux::toast(text: __('Failed to send verification code'), variant: 'danger');
+            Flux::toast(text: $e->getMessage(), variant: 'danger');
+//            Flux::toast(text: __('Failed to send verification code'), variant: 'danger');
         }
     }
 

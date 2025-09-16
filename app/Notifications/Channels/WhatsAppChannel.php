@@ -33,6 +33,8 @@ final readonly class WhatsAppChannel
             return;
         }
 
+
+
         /** @var WhatsAppPayload $data */
         $data = (array) $notification->toWhatsApp($notifiable);
         $to   = (string) ($data['to'] ?? ($notifiable->routeNotificationForWhatsApp() ?? ''));
@@ -55,7 +57,7 @@ final readonly class WhatsAppChannel
                 (array) ($t['vars'] ?? []),
                 (array) ($t['urlParams'] ?? []),
                 $t['ttl'] ?? null,
-                (string) ($t['language'] ?? 'fr')
+                (string) ($t['language'] ?? 'en_US')
             );
 
             return;
