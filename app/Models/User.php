@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Concerns\HasExtraUlid;
 use App\Models\Concerns\HasRoleScopes;
 use Goldoni\LaravelVirtualWallet\Traits\HasWallets;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -16,8 +17,6 @@ use Illuminate\Support\Str;
 use libphonenumber\PhoneNumberUtil;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-
 
 class User extends Authenticatable
 {
@@ -86,11 +85,12 @@ class User extends Authenticatable
                     return null;
                 }
 
-                $util = PhoneNumberUtil::getInstance();
+                $phoneNumberUtil = PhoneNumberUtil::getInstance();
 
                 try {
-                    $number = $util->parse($phone);
-                    return strtoupper($util->getRegionCodeForNumber($number));
+                    $number = $phoneNumberUtil->parse($phone);
+
+                    return strtoupper((string) $phoneNumberUtil->getRegionCodeForNumber($number));
                 } catch (Throwable) {
                     return null;
                 }

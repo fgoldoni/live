@@ -37,10 +37,16 @@ return [
 
     'vonage' => config('vonage'),
 
-    'meta_wa' => [
-        'token' => env('META_WA_TOKEN', ''),
-        'phone_number_id' => env('META_WA_PHONE_NUMBER_ID', ''),
-        'template' => env('META_WA_TEMPLATE', ''),
+    'whatsapp' => [
+        'api_url'         => env('WA_API_URL'),
+        'phone_number_id' => env('WA_PHONE_NUMBER_ID'),
+        'access_token'    => env('WA_ACCESS_TOKEN'),
+    ],
+
+
+    'brevo' => [
+        'key'     => env('SENDINBLUE_API_KEY'),
+        'list_id' => env('BREVO_LIST_ID'),
     ],
 
 ];

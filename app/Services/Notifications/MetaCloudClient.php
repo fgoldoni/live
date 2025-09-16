@@ -6,31 +6,100 @@ namespace App\Services\Notifications;
 
 use App\Contracts\Notifications\WhatsAppClient;
 use Illuminate\Http\Client\Factory as HttpFactory;
-use Illuminate\Support\Str;
-use RuntimeException;
+use Illuminate\Http\Client\Response;
+use InvalidArgumentException;
 
-final readonly class MetaCloudClient implements WhatsAppClient
+final class MetaCloudClient implements WhatsAppClient
 {
-    public function __construct(private HttpFactory $httpFactory)
-    {
+    public function __construct(
+        private readonly HttpFactory $httpFactory,
+        private string $apiUrl = '',
+        private string $accessToken = '',
+        private string $phoneNumberId = ''
+    ) {
+        $this->apiUrl        = $this->apiUrl ?: (string) config('services.whatsapp.api_url', '');
+        $this->accessToken   = $this->accessToken ?: (string) config('services.whatsapp.access_token', '');
+        $this->phoneNumberId = $this->phoneNumberId ?: (string) config('services.whatsapp.phone_number_id', '');
+
+        if ($this->apiUrl === '' || $this->accessToken === '' || $this->phoneNumberId === '') {
+            throw new InvalidArgumentException('WhatsApp Cloud API configuration is missing.');
+        }
     }
 
-    public function sendText(string $phoneE164, string $text): void
+    public function sendText(string $to, string $text): bool
     {
-        $token   = (string) config('services.meta_wa.token');
-        $phoneId = (string) config('services.meta_wa.phone_number_id');
+        $payload = [
+            'messaging_product' => 'whatsapp',
+            'to'                => $this->normalizePhone($to),
+            'type'              => 'text',
+            'text'              => ['body' => $text],
+        ];
 
-        if ($token === '' || $phoneId === '') {
-            throw new RuntimeException('WhatsApp is not configured');
+        return $this->sendRequest($payload)->successful();
+    }
+
+    public function sendTemplate(
+        string $to,
+        string $templateName,
+        array $vars = [],
+        array $urlParams = [],
+        ?int $ttlSeconds = null,
+        string $language = 'fr'
+    ): bool {
+        $components = [];
+
+        if ($vars !== []) {
+            $components[] = [
+                'type'       => 'body',
+                'parameters' => array_map(
+                    static fn ($v): array => ['type' => 'text', 'text' => (string) $v],
+                    array_values($vars)
+                ),
+            ];
         }
 
-        $endpoint = 'https://graph.facebook.com/v20.0/' . $phoneId . '/messages';
-        $payload  = [
+        if ($urlParams !== []) {
+            foreach (array_values($urlParams) as $index => $param) {
+                $components[] = [
+                    'type'       => 'button',
+                    'sub_type'   => 'URL',
+                    'index'      => $index,
+                    'parameters' => [['type' => 'text', 'text' => (string) $param]],
+                ];
+            }
+        }
+
+        $payload = [
             'messaging_product' => 'whatsapp',
-            'to'                => $phoneE164,
-            'type'              => 'text',
-            'text'              => ['body' => Str::limit($text, 1000, '')],
+            'to'                => $this->normalizePhone($to),
+            'type'              => 'template',
+            'template'          => [
+                'name'       => $templateName,
+                'language'   => ['code' => $language],
+                'components' => $components,
+            ],
         ];
-        $this->httpFactory->withToken($token)->post($endpoint, $payload)->throw();
+
+        if ($ttlSeconds !== null) {
+            $payload['message_send_ttl_seconds'] = $ttlSeconds;
+        }
+
+        return $this->sendRequest($payload)->successful();
+    }
+
+    private function sendRequest(array $payload): Response
+    {
+        $endpoint = rtrim($this->apiUrl, '/') . '/' . $this->phoneNumberId . '/messages';
+
+        return $this->httpFactory
+            ->withToken($this->accessToken)
+            ->acceptJson()
+            ->asJson()
+            ->post($endpoint, $payload);
+    }
+
+    private function normalizePhone(string $number): string
+    {
+        return preg_replace('/\D+/', '', $number) ?? $number;
     }
 }

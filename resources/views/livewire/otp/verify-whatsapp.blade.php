@@ -24,7 +24,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             $this->phone = $this->user->phone;
             $this->initCooldown();
         } catch (\Throwable) {
-            Flux::toast(variant: 'danger', text: __('Unable to initialize WhatsApp verification'));
+            Flux::toast(text: __('Unable to initialize WhatsApp verification'), variant: 'danger');
             $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
         }
     }
@@ -37,7 +37,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             $this->startCooldown();
             session()->flash('status', __('Verification code sent'));
         } catch (\Throwable) {
-            Flux::toast(variant: 'danger', text: __('Failed to resend WhatsApp code'));
+            Flux::toast(text: __('Failed to resend WhatsApp code'), variant: 'danger');
         }
     }
 

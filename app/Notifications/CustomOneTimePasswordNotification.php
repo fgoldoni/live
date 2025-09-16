@@ -6,13 +6,12 @@ namespace App\Notifications;
 
 use App\Notifications\Channels\WhatsAppChannel;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\VonageMessage;
 use Spatie\OneTimePasswords\Models\OneTimePassword;
 use Spatie\OneTimePasswords\Notifications\OneTimePasswordNotification;
 
-final class CustomOneTimePasswordNotification extends OneTimePasswordNotification implements ShouldQueue
+final class CustomOneTimePasswordNotification extends OneTimePasswordNotification
 {
     use Queueable;
     /**

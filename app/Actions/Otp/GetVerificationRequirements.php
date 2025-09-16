@@ -14,10 +14,10 @@ final readonly class GetVerificationRequirements
     public function execute(User $user): array
     {
         return [
-            'email'      => $user->email,
-            'phone'      => $user->phone,
-            'needsEmail' => $user->email !== null && $user->email_verified_at === null,
-            'needsPhone' => $user->phone !== null && $user->phone_verified_at === null,
+            'email'        => $user->email,
+            'phone'        => $user->phone,
+            'needsEmail'   => $user->email !== null && $user->email_verified_at === null,
+            'needsPhone'   => $user->phone !== null && $user->phone_verified_at === null,
             'onlyWhatsApp' => $user->is_african_phone,
         ];
     }

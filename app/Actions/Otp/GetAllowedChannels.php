@@ -21,7 +21,7 @@ final readonly class GetAllowedChannels
 
         if ($user->phone) {
             $allowed[] = 'vonage';
-            $allowed[] = 'whatsapp';
+            $allowed[] = 'WhatsApp';
         }
 
         return $allowed;

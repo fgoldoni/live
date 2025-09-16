@@ -23,7 +23,7 @@ class extends Component {
             $this->email = $user->email;
             $this->initCooldown();
         } catch (\Throwable) {
-            Flux::toast(variant: 'danger', text: __('Unable to initialize email verification'));
+            Flux::toast(text: __('Unable to initialize email verification'), variant: 'danger');
             $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
         }
     }
@@ -36,7 +36,7 @@ class extends Component {
             $this->startCooldown();
             session()->flash('status', __('Verification code sent'));
         } catch (\Throwable) {
-            Flux::toast(variant: 'danger', text: __('Failed to resend email code'));
+            Flux::toast(text: __('Failed to resend email code'), variant: 'danger');
         }
     }
 
