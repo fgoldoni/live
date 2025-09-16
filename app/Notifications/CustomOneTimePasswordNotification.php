@@ -30,7 +30,7 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
      */
     public function via(object $notifiable): array
     {
-        return array_map(fn (string $c): string => $c === 'whatsapp' ? WhatsAppChannel::class : $c, $this->channels);
+        return array_map(fn (string $c): string => $c === 'WhatsApp' ? WhatsAppChannel::class : $c, $this->channels);
     }
 
     public function toMail(object $notifiable): MailMessage

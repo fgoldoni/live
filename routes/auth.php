@@ -38,10 +38,14 @@ Route::middleware('auth')->group(function () {
         ->name('password.confirm');
 });
 
+
+
+
 Route::middleware(['auth'])->group(function () {
     Volt::route('otp/verify', 'otp.verify')->name('otp.verify');
     Volt::route('otp/verify-email', 'otp.verify-email')->name('otp.verify-email');
-    Volt::route('otp/verify-phone', 'otp.verify-phone')->name('otp.verify-phone');
+    Volt::route('otp/verify-vonage', 'otp.verify-vonage')->name('otp.verify-vonage');
+    Volt::route('otp/verify-whatsapp', 'otp.verify-whatsapp')->name('otp.verify-whatsapp');
 });
 
 Route::post('logout', App\Livewire\Actions\Logout::class)

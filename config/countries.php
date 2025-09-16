@@ -67,4 +67,10 @@ return [
     */
     'default' => 'DE',
 
+    'africa_iso2' => [
+        'DZ','AO','BJ','BW','BF','BI','CM','CV','CF','TD','KM','CG','CD','CI','DJ','EG','GQ','ER','ET',
+        'GA','GM','GH','GN','GW','KE','LS','LR','LY','MG','MW','ML','MR','MU','MA','MZ','NA','NE','NG',
+        'RW','RE','SH','ST','SN','SC','SL','SO','ZA','SS','SD','TZ','TG','TN','UG','EH','ZM','ZW',
+    ],
+
 ];

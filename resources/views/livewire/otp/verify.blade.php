@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Facades\Otp;
+use App\Models\User as AuthUser;
 use Flux\Flux;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -12,73 +13,86 @@ new #[Layout('components.layouts.auth')] class extends Component {
     public ?string $phone = null;
     public bool $needsEmail = false;
     public bool $needsPhone = false;
+    public bool $onlyWhatsApp = false;
     public int $cooldown = 0;
+    public ?AuthUser $user = null;
+    public int $userId = 0;
 
     public function mount(): void
     {
-        $req = Otp::requirements(auth()->user());
-        $this->email = $req['email'];
-        $this->phone = $req['phone'];
-        $this->needsEmail = $req['needsEmail'];
-        $this->needsPhone = $req['needsPhone'];
-        $this->cooldown = Otp::remainingCooldown(auth()->id());
+        try {
+            $this->user = auth()->user();
+            $this->userId = (int) ($this->user?->getAuthIdentifier() ?? 0);
+            if (! $this->userId) throw new RuntimeException('Unauthenticated');
+
+            $req = Otp::requirements($this->user);
+            $this->email        = $req['email'];
+            $this->phone        = $req['phone'];
+            $this->needsEmail   = $req['needsEmail'];
+            $this->needsPhone   = $req['needsPhone'];
+            $this->onlyWhatsApp = $req['onlyWhatsApp'];
+
+            $this->cooldown = Otp::remainingCooldown($this->userId);
+        } catch (\Throwable $e) {
+            Flux::toast(text: __('Unable to initialize verification'), variant: 'danger');
+            $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        }
     }
 
     public function verifyEmail(): void
     {
-        if (!$this->needsEmail) {
-            return;
-        }
-        $left = Otp::remainingCooldown(auth()->id());
-        if ($left > 0) {
-            $this->cooldown = $left;
-            $this->dispatch('otp-cooldown-started', cooldown: $this->cooldown);
-            Flux::toast(variant: 'warning', text: __('Please wait before requesting a new code'));
-            return;
-        }
-        Otp::send(auth()->user(), 'mail');
-        $this->cooldown = (int) config('one-time-passwords.resend_cooldown_seconds', 60);
-        $this->dispatch('otp-cooldown-started', cooldown: $this->cooldown);
-        Flux::toast(variant: 'success', text: __('Verification code sent to email'));
-        $this->redirectRoute('otp.verify-email', navigate: true);
+        if (! $this->needsEmail) return;
+        $this->sendAndRedirect('mail', 'otp.verify-email', __('Verification code sent to email'));
     }
 
     public function verifyPhoneSms(): void
     {
-        if (!$this->needsPhone) {
+        if (! $this->needsPhone) return;
+        if ($this->onlyWhatsApp) {
+            Flux::toast(text: __('SMS verification is not available for your region. Please use WhatsApp.'), variant: 'warning');
             return;
         }
-        $left = Otp::remainingCooldown(auth()->id());
-        if ($left > 0) {
-            $this->cooldown = $left;
-            $this->dispatch('otp-cooldown-started', cooldown: $this->cooldown);
-            Flux::toast(variant: 'warning', text: __('Please wait before requesting a new code'));
-            return;
-        }
-        Otp::send(auth()->user(), 'vonage');
-        $this->cooldown = (int) config('one-time-passwords.resend_cooldown_seconds', 60);
-        $this->dispatch('otp-cooldown-started', cooldown: $this->cooldown);
-        Flux::toast(variant: 'success', text: __('Verification code sent by SMS'));
-        $this->redirectRoute('otp.verify-phone', navigate: true);
+        $this->sendAndRedirect('vonage', 'otp.verify-vonage', __('Verification code sent by SMS'));
     }
 
-    public function verifyPhoneWhatsapp(): void
+    public function verifyPhoneWhatsApp(): void
     {
-        if (!$this->needsPhone) {
-            return;
+        if (! $this->needsPhone) return;
+        $this->sendAndRedirect('WhatsApp', 'otp.verify-whatsapp', __('Verification code sent via WhatsApp'));
+    }
+
+    private function sendAndRedirect(string $channel, string $route, string $successMsg): void
+    {
+        try {
+            if ($this->beginCooldownIfNeeded()) return;
+            Otp::send($this->user, $channel);
+            $this->startCooldown();
+            Flux::toast(text: $successMsg, variant: 'success');
+            $this->redirectRoute($route, navigate: true);
+        } catch (\Throwable $e) {
+            Flux::toast(text: __('Failed to send verification code'), variant: 'danger');
         }
-        $left = Otp::remainingCooldown(auth()->id());
-        if ($left > 0) {
+    }
+
+    private function beginCooldownIfNeeded(): bool
+    {
+        try {
+            $left = Otp::remainingCooldown($this->userId);
+            if ($left <= 0) return false;
             $this->cooldown = $left;
             $this->dispatch('otp-cooldown-started', cooldown: $this->cooldown);
-            Flux::toast(variant: 'warning', text: __('Please wait before requesting a new code'));
-            return;
+            Flux::toast(text: __('Please wait before requesting a new code'), variant: 'warning');
+            return true;
+        } catch (\Throwable $e) {
+            Flux::toast(text: __('Cooldown check failed'), variant: 'danger');
+            return true;
         }
-        Otp::send(auth()->user(), 'meta_wa');
+    }
+
+    private function startCooldown(): void
+    {
         $this->cooldown = (int) config('one-time-passwords.resend_cooldown_seconds', 60);
         $this->dispatch('otp-cooldown-started', cooldown: $this->cooldown);
-        Flux::toast(variant: 'success', text: __('Verification code sent via WhatsApp'));
-        $this->redirectRoute('otp.verify-phone', navigate: true);
     }
 };
 ?>
@@ -100,9 +114,9 @@ new #[Layout('components.layouts.auth')] class extends Component {
                     <div class="font-medium">{{ __('Email') }}</div>
                     <div class="text-zinc-600 dark:text-zinc-400">{{ $email }}</div>
                 </div>
-                <flux:button wire:click="verifyEmail" x-bind:disabled="cd > 0">
-                    <span x-show="cd === 0">{{ __('Verify') }}</span>
-                    <span x-show="cd > 0">{{ __('Resend in') }} <span x-text="cd"></span>s</span>
+                <flux:button class="w-full sm:w-auto" wire:click="verifyEmail" x-bind:disabled="cd > 0">
+                    <span x-show="cd === 0" x-cloak>{{ __('Verify') }}</span>
+                    <span x-show="cd > 0" x-cloak>{{ __('Resend in') }} <span x-text="cd"></span>s</span>
                 </flux:button>
             </div>
         @endif
@@ -113,18 +127,25 @@ new #[Layout('components.layouts.auth')] class extends Component {
                     <div class="font-medium">{{ __('Phone') }}</div>
                     <div class="text-zinc-600 dark:text-zinc-400">{{ $phone }}</div>
                 </div>
-                <div class="flex gap-3">
-                    <flux:button wire:click="verifyPhoneSms" x-bind:disabled="cd > 0">
-                        <span x-show="cd === 0">{{ __('Verify by SMS') }}</span>
-                        <span x-show="cd > 0">{{ __('Resend in') }} <span x-text="cd"></span>s</span>
+
+                @if($onlyWhatsApp)
+                    <flux:button class="w-full" wire:click="verifyPhoneWhatsApp" x-bind:disabled="cd > 0">
+                        <span x-show="cd === 0" x-cloak>{{ __('Verify by WhatsApp') }}</span>
+                        <span x-show="cd > 0" x-cloak>{{ __('Resend in') }} <span x-text="cd"></span>s</span>
                     </flux:button>
-                    <flux:button wire:click="verifyPhoneWhatsapp" x-bind:disabled="cd > 0">
-                        <span x-show="cd === 0">{{ __('Verify by WhatsApp') }}</span>
-                        <span x-show="cd > 0">{{ __('Resend in') }} <span x-text="cd"></span>s</span>
-                    </flux:button>
-                </div>
+                @else
+                    <flux:button.group class="w-full">
+                        <flux:button class="w-full" wire:click="verifyPhoneSms" x-bind:disabled="cd > 0">
+                            <span x-show="cd === 0" x-cloak>{{ __('Verify by SMS') }}</span>
+                            <span x-show="cd > 0" x-cloak>{{ __('Resend in') }} <span x-text="cd"></span>s</span>
+                        </flux:button>
+                        <flux:button class="w-full" wire:click="verifyPhoneWhatsApp" x-bind:disabled="cd > 0">
+                            <span x-show="cd === 0" x-cloak>{{ __('Verify by WhatsApp') }}</span>
+                            <span x-show="cd > 0" x-cloak>{{ __('Resend in') }} <span x-text="cd"></span>s</span>
+                        </flux:button>
+                    </flux:button.group>
+                @endif
             </div>
         @endif
     </div>
 </div>
-

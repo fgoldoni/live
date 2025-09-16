@@ -13,8 +13,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use libphonenumber\PhoneNumberUtil;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 
 class User extends Authenticatable
 {
@@ -39,6 +42,11 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $appends = [
+        'phone_country_iso2',
+        'is_african_phone',
     ];
 
     protected function casts(): array
@@ -66,5 +74,43 @@ class User extends Authenticatable
     public function routeNotificationForWhatsapp(Notification $notification): string
     {
         return (string) $this->phone;
+    }
+
+    protected function phoneCountryIso2(): Attribute
+    {
+        return Attribute::make(
+            get: function (): ?string {
+                $phone = $this->phone ?? '';
+
+                if ($phone === '' || $phone[0] !== '+') {
+                    return null;
+                }
+
+                $util = PhoneNumberUtil::getInstance();
+
+                try {
+                    $number = $util->parse($phone);
+                    return strtoupper($util->getRegionCodeForNumber($number));
+                } catch (Throwable) {
+                    return null;
+                }
+            }
+        );
+    }
+
+    protected function isAfricanPhone(): Attribute
+    {
+        return Attribute::make(
+            get: function (): bool {
+                $iso2 = $this->phone_country_iso2;
+
+                if (! $iso2) {
+                    return false;
+                }
+
+
+                return in_array($iso2, config('countries.africa_iso2'), true);
+            }
+        );
     }
 }

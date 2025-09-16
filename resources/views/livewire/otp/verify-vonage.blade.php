@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 use App\Facades\Otp;
 use App\Livewire\Concerns\HandlesOtpCooldown;
+use App\Models\User as AuthUser;
 use Flux\Flux;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')]
-class extends Component {
+new #[Layout('components.layouts.auth')] class extends Component {
     use HandlesOtpCooldown;
 
     public string $code = '';
-    public ?string $email = null;
+    public ?string $phone = null;
+    public ?AuthUser $user = null;
 
     public function mount(): void
     {
         try {
-            $user = auth()->user();
-            if (! $user) throw new RuntimeException('Unauthenticated');
-            $this->email = $user->email;
+            $this->user = auth()->user();
+            if (! $this->user) throw new RuntimeException('Unauthenticated');
+            $this->phone = $this->user->phone;
             $this->initCooldown();
         } catch (\Throwable) {
-            Flux::toast(variant: 'danger', text: __('Unable to initialize email verification'));
+            Flux::toast(text: __('Unable to initialize SMS verification'), variant: 'danger');
             $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
         }
     }
@@ -32,11 +33,11 @@ class extends Component {
     {
         try {
             if ($this->beginCooldownIfNeeded()) return;
-            Otp::send(auth()->user(), 'mail');
+            Otp::send($this->user, 'vonage');
             $this->startCooldown();
             session()->flash('status', __('Verification code sent'));
         } catch (\Throwable) {
-            Flux::toast(variant: 'danger', text: __('Failed to resend email code'));
+            Flux::toast(text: __('Failed to resend SMS code'), variant: 'danger');
         }
     }
 
@@ -44,12 +45,11 @@ class extends Component {
     {
         try {
             $this->validate(['code' => ['required', 'digits:' . (int) config('one-time-passwords.password_length', 6)]]);
-            $user = auth()->user();
-            Otp::confirm($user, $this->code);
-            Otp::markEmailVerified($user);
-            Flux::toast(text: __('Email verified'), variant: 'success');
+            Otp::confirm($this->user, $this->code);
+            Otp::markPhoneVerified($this->user);
+            Flux::toast(text: __('Phone verified'), variant: 'success');
 
-            if ($user->phone && is_null($user->phone_verified_at)) {
+            if ($this->user?->email && is_null($this->user?->email_verified_at)) {
                 $this->redirectRoute('otp.verify', navigate: true);
                 return;
             }
@@ -67,8 +67,8 @@ class extends Component {
     class="flex flex-col gap-6"
 >
     <div class="mb-4 text-center">
-        <flux:heading level="2">{{ __('Verify your email') }}</flux:heading>
-        <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{{ $email }}</p>
+        <flux:heading level="2">{{ __('Verify your phone (SMS)') }}</flux:heading>
+        <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{{ $phone }}</p>
     </div>
 
     <div class="mb-4">
@@ -86,8 +86,8 @@ class extends Component {
         </div>
 
         <div class="grid gap-2">
-            <flux:label for="email-code">{{ __('Verification code') }}</flux:label>
-            <flux:input id="email-code" wire:model.defer="code" inputmode="numeric" autocomplete="one-time-code"
+            <flux:label for="phone-code">{{ __('Verification code') }}</flux:label>
+            <flux:input id="phone-code" wire:model.defer="code" inputmode="numeric" autocomplete="one-time-code"
                         maxlength="{{ (int) config('one-time-passwords.password_length', 6) }}"
                         placeholder="{{ str_repeat('•', (int) config('one-time-passwords.password_length', 6)) }}"
                         required/>
