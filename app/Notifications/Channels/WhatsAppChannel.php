@@ -10,8 +10,8 @@ use Illuminate\Notifications\Notification;
 /**
  * @phpstan-type WhatsAppTemplate array{
  *   name: string,
- *   vars?: list<string>,
- *   urlParams?: list<string>,
+ *   variables?: list<string>,
+ *   urlParameters?: list<string>,
  *   ttl?: int,
  *   language?: string
  * }
@@ -29,41 +29,42 @@ final readonly class WhatsAppChannel
 
     public function send(mixed $notifiable, Notification $notification): void
     {
-        if (!method_exists($notification, 'toWhatsApp')) {
+        if (! method_exists($notification, 'toWhatsApp')) {
             return;
         }
 
+        /** @var WhatsAppPayload $payload */
+        $payload = (array) $notification->toWhatsApp($notifiable);
 
-
-        /** @var WhatsAppPayload $data */
-        $data = (array) $notification->toWhatsApp($notifiable);
-        $to   = (string) ($data['to'] ?? ($notifiable->routeNotificationForWhatsApp() ?? ''));
+        $to = (string) ($payload['to'] ?? ($notifiable->routeNotificationForWhatsApp() ?? ''));
 
         if ($to === '') {
             return;
         }
 
-        if (isset($data['template']) && is_array($data['template'])) {
-            $t    = $data['template'];
-            $name = (string) ($t['name'] ?? '');
+        if (isset($payload['template']) && is_array($payload['template'])) {
+            $template     = $payload['template'];
+            $templateName = (string) ($template['name'] ?? '');
 
-            if ($name === '') {
+            if ($templateName === '') {
                 return;
             }
 
+            $languageCode = (string) ($template['language'] ?? 'en_US');
+
             $this->whatsAppClient->sendTemplate(
                 $to,
-                $name,
-                (array) ($t['vars'] ?? []),
-                (array) ($t['urlParams'] ?? []),
-                $t['ttl'] ?? null,
-                (string) ($t['language'] ?? 'en_US')
+                $templateName,
+                (array) ($template['variables'] ?? []),
+                (array) ($template['urlParameters'] ?? []),
+                $template['ttl'] ?? null,
+                $languageCode
             );
 
             return;
         }
 
-        $text = (string) ($data['text'] ?? '');
+        $text = (string) ($payload['text'] ?? '');
 
         if ($text !== '') {
             $this->whatsAppClient->sendText($to, $text);

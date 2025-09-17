@@ -52,9 +52,7 @@ final class MetaCloudClient implements WhatsAppClient
         array $vars = [],
         array $urlParams = [],
         ?int $ttlSeconds = null,
-        string $language = 'en_US',
-        ?string           $webhookUrl = null,
-        string            $webhookVersion = 'v1',
+        string $language = 'en_US'
     ): bool {
         $components = [];
 
@@ -72,15 +70,16 @@ final class MetaCloudClient implements WhatsAppClient
             foreach (array_values($urlParams) as $index => $param) {
                 $components[] = [
                     'type'       => 'button',
-                    'sub_type'   => 'copy_code',
+                    'sub_type'   => 'url',
                     'index'      => $index,
-                    'parameters' => [['type' => 'coupon_code', 'coupon_code' => $param]],
+                    'parameters' => [['type' => 'text', 'text' => $param]],
                 ];
             }
         }
 
         $payload = [
             'messaging_product' => 'whatsapp',
+            'message_send_ttl_seconds' => 900,
             'to'                => $this->normalizePhone($to),
             'type'              => 'template',
             'template'          => [
@@ -89,16 +88,6 @@ final class MetaCloudClient implements WhatsAppClient
                 'components' => $components,
             ],
         ];
-
-        if ($ttlSeconds !== null) {
-            $payload['message_send_ttl_seconds'] = $ttlSeconds;
-        }
-
-        if ($webhookUrl !== null) {
-            $payload['webhook_url']     = $webhookUrl;
-            $payload['webhook_version'] = $webhookVersion;
-        }
-
 
         return $this->sendRequest($payload)->successful();
     }

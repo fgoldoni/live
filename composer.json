@@ -14,7 +14,6 @@
         "endroid/qr-code": "^6.0",
         "getbrevo/brevo-php": "^2.0",
         "goldoni/laravel-model-permissions": "dev-main",
-        "goldoni/laravel-teams": "dev-main",
         "goldoni/laravel-virtual-wallet": "dev-main",
         "guzzlehttp/guzzle": "^7.10",
         "laravel-lang/common": "^6.7",
@@ -124,13 +123,6 @@
         "1": {
             "type": "path",
             "url": "packages/goldoni/laravel-virtual-wallet",
-            "options": {
-                "symlink": true
-            }
-        },
-        "2": {
-            "type": "path",
-            "url": "packages/goldoni/laravel-teams",
             "options": {
                 "symlink": true
             }

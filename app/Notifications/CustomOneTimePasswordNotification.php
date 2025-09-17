@@ -29,7 +29,7 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
     public function via(object $notifiable): array
     {
         return array_map(
-            static fn (string $c): string => $c === 'WhatsApp' ? WhatsAppChannel::class : $c,
+            static fn (string $channel): string => $channel === 'WhatsApp' ? WhatsAppChannel::class : $channel,
             $this->channels
         );
     }
@@ -53,34 +53,37 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
      * WhatsApp template payload for our custom channel.
      *
      * @return array{
-     *   messaging_product:'whatsapp',
+     *   messaging_product: 'whatsapp',
      *   to: string,
-     *   type:'template',
+     *   type: 'template',
+     *   language: array{code: string},
      *   template: array{
      *     name: string,
-     *     vars: array{0:string,1:string,2:int},
-     *     urlParams: array<int,string>
+     *     variables: list<string>,
+     *     urlParameters?: list<string>,
+     *     ttl?: int,
+     *     language?: string
      *   }
      * }
      */
-    public function toWhatsapp(object $notifiable): array
+    public function toWhatsApp(object $notifiable): array
     {
-        $to = method_exists($notifiable, 'routeNotificationForWhatsapp')
-            ? (string) $notifiable->routeNotificationForWhatsapp($this)
+        $to = method_exists($notifiable, 'routeNotificationForWhatsApp')
+            ? (string) $notifiable->routeNotificationForWhatsApp($this)
             : (string) (data_get($notifiable, 'phone', ''));
 
-        $name = (string) data_get($notifiable, 'name', 'User');
-        $code = (string) $this->oneTimePassword->password;
-        $ttl  = (int) config('one-time-passwords.default_expires_in_minutes', 10);
+        $code         = (string) $this->oneTimePassword->password;
+        $supportPhone = (string) config('services.whatsapp.support_phone');
 
         return [
             'messaging_product' => 'whatsapp',
             'to'                => $to,
             'type'              => 'template',
+            'language'          => ['code' => 'en_US'],
             'template'          => [
-                'name'      => 'account_otp_verification_2',
-                'vars'      => [$name, $code, $ttl],
-                'urlParams' => [$code],
+                'name'      => 'otp_code',
+                'variables' => [$code, $supportPhone],
+                'urlParameters' => [$code],
             ],
         ];
     }

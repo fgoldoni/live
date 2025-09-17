@@ -41,6 +41,8 @@ return [
         'api_url'         => env('WA_API_URL'),
         'phone_number_id' => env('WA_PHONE_NUMBER_ID'),
         'access_token'    => env('WA_ACCESS_TOKEN'),
+        'support_phone'    => env('SUPPORT_PHONE', '+4917647159315'),
+        'webhook_verify_token' => env('WHATSAPP_WEBHOOK_VERIFY_TOKEN'),
     ],
 
 
