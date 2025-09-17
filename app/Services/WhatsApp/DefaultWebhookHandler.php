@@ -23,10 +23,12 @@ final readonly class DefaultWebhookHandler implements WhatsAppWebhookHandler
     public function handle(array $payload): void
     {
         $changes = (array) Arr::get($payload, 'entry.0.changes', []);
+
         foreach ($changes as $change) {
             $value              = $change['value'] ?? [];
             $phoneNumberId      = (string) Arr::get($value, 'metadata.phone_number_id', '');
             $displayPhoneNumber = (string) Arr::get($value, 'metadata.display_phone_number', '');
+
             foreach ((array) ($value['statuses'] ?? []) as $status) {
                 $statusStr = (string) Arr::get($status, 'status', 'accepted');
                 $enum      = in_array($statusStr, array_column(WhatsAppStatus::cases(), 'value'), true)
