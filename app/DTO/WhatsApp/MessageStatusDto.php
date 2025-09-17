@@ -6,15 +6,18 @@ declare(strict_types=1);
 namespace App\DTO\WhatsApp;
 
 use App\Enums\WhatsAppStatus;
-use Carbon\CarbonImmutable;
+use Carbon\Carbon;
 
 final readonly class MessageStatusDto
 {
+    /**
+     * @param array<string,mixed> $rawPayload
+     */
     public function __construct(
         public string $wamid,
         public string $recipientId,
         public WhatsAppStatus $status,
-        public ?CarbonImmutable $occurredAt,
+        public ?Carbon $occurredAt,
         public ?string $conversationId,
         public ?string $conversationOrigin,
         public ?string $category,

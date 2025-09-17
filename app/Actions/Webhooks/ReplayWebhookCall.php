@@ -1,4 +1,5 @@
 <?php
+
 // app/Actions/Webhooks/ReplayWebhookCall.php
 declare(strict_types=1);
 
@@ -11,7 +12,7 @@ final readonly class ReplayWebhookCall
 {
     public function execute(int $id): void
     {
-        $call = WebhookCall::query()->findOrFail($id);
-        dispatch(new ProcessWhatsAppWebhook($call));
+        $model = WebhookCall::query()->findOrFail($id);
+        dispatch(new ProcessWhatsAppWebhook($model));
     }
 }

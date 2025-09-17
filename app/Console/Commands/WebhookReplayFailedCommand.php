@@ -1,4 +1,5 @@
 <?php
+
 // app/Console/Commands/WebhookReplayFailedCommand.php
 declare(strict_types=1);
 
@@ -11,29 +12,33 @@ use Spatie\WebhookClient\Models\WebhookCall;
 
 final class WebhookReplayFailedCommand extends Command
 {
-    protected $signature = 'webhook:replay-failed {--since=} {--limit=100} {--name=}';
+    protected $signature   = 'webhook:replay-failed {--since=} {--limit=100} {--name=}';
+
     protected $description = 'Replays failed stored webhooks';
 
     public function handle(): int
     {
         $since = $this->option('since') ? CarbonImmutable::parse((string) $this->option('since')) : null;
         $limit = (int) $this->option('limit');
-        $name = $this->option('name');
+        $name  = $this->option('name');
 
-        $q = WebhookCall::query()->whereNotNull('exception');
-        if ($since) {
-            $q->where('created_at', '>=', $since);
+        $builder = WebhookCall::query()->whereNotNull('exception');
+
+        if ($since instanceof CarbonImmutable) {
+            $builder->where('created_at', '>=', $since);
         }
+
         if ($name) {
-            $q->where('name', (string) $name);
+            $builder->where('name', (string) $name);
         }
 
-        $calls = $q->orderBy('created_at')->limit($limit)->get();
+        $calls = $builder->orderBy('created_at')->limit($limit)->get();
         foreach ($calls as $call) {
             dispatch(new ProcessWhatsAppWebhook($call));
         }
 
-        $this->info('Dispatched: '.$calls->count());
+        $this->info('Dispatched: ' . $calls->count());
+
         return self::SUCCESS;
     }
 }

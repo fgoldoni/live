@@ -22,10 +22,10 @@ final readonly class UpsertMessageStatus
     public function execute(MessageStatusDto $messageStatusDto): void
     {
         $before = WhatsAppMessage::query()->where('wamid', $messageStatusDto->wamid)->value('status');
-        $saved  = $this->whatsAppMessageRepository->upsertStatus($messageStatusDto);
+        $whatsAppMessage  = $this->whatsAppMessageRepository->upsertStatus($messageStatusDto);
 
-        if ($before !== $saved->status) {
-            $this->dispatcher->dispatch(new MessageStatusChanged($saved, $before, $saved->status));
+        if ($before !== $whatsAppMessage->status) {
+            $this->dispatcher->dispatch(new MessageStatusChanged($whatsAppMessage, $before, $whatsAppMessage->status));
         }
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 // app/Console/Commands/WebhookReplayCommand.php
 declare(strict_types=1);
 
@@ -9,13 +10,15 @@ use Illuminate\Console\Command;
 
 final class WebhookReplayCommand extends Command
 {
-    protected $signature = 'webhook:replay {id : WebhookCall id}';
+    protected $signature   = 'webhook:replay {id : WebhookCall id}';
+
     protected $description = 'Replays a stored webhook by id';
 
-    public function handle(ReplayWebhookCall $action): int
+    public function handle(ReplayWebhookCall $replayWebhookCall): int
     {
-        $action->execute((int) $this->argument('id'));
+        $replayWebhookCall->execute((int) $this->argument('id'));
         $this->info('Dispatched');
+
         return self::SUCCESS;
     }
 }

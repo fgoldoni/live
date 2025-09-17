@@ -63,9 +63,7 @@ class User extends Authenticatable
 
     public function guardName(): string
     {
-        return method_exists($this, 'getDefaultGuardName')
-            ? $this->getDefaultGuardName()
-            : (config('permission.defaults.guard') ?? config('auth.defaults.guard', 'web'));
+        return $this->getDefaultGuardName();
     }
 
     public function initials(): string
