@@ -2,6 +2,7 @@
 
 return [
     App\Providers\AppServiceProvider::class,
-    App\Providers\VoltServiceProvider::class,
     App\Providers\BindingServiceProvider::class,
+    App\Providers\TelescopeServiceProvider::class,
+    App\Providers\VoltServiceProvider::class,
 ];

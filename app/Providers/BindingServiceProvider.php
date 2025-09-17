@@ -9,11 +9,15 @@ use App\Contracts\Auth\PhoneNormalizer;
 use App\Contracts\Geo\CountryResolver;
 use App\Contracts\Notifications\WhatsAppClient as WhatsAppClientContract;
 use App\Contracts\Otp\OtpManager as OtpManagerContract;
+use App\Contracts\WhatsApp\WhatsAppMessageRepository;
+use App\Contracts\WhatsApp\WhatsAppWebhookHandler;
+use App\Repositories\EloquentWhatsAppMessageRepository;
 use App\Services\Auth\LibPhoneNormalizer;
 use App\Services\Auth\SignedUrlMagicLinkGenerator;
 use App\Services\Geo\StevebaumanLocationCountryResolver;
 use App\Services\Notifications\MetaCloudClient;
 use App\Services\Otp\DefaultOtpManager;
+use App\Services\WhatsApp\DefaultWebhookHandler;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Mail\Mailer;
@@ -55,6 +59,9 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
             );
         });
 
+        $this->app->singleton(WhatsAppMessageRepository::class, EloquentWhatsAppMessageRepository::class);
+        $this->app->singleton(WhatsAppWebhookHandler::class, DefaultWebhookHandler::class);
+
         $this->app->singleton(CountryResolver::class, static fn (): CountryResolver => new StevebaumanLocationCountryResolver);
     }
 
@@ -70,6 +77,8 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
             CountryResolver::class,
             WhatsAppClientContract::class,
             OtpManagerContract::class,
+            WhatsAppMessageRepository::class,
+            WhatsAppWebhookHandler::class,
         ];
     }
 }

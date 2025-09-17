@@ -78,11 +78,11 @@ final class MetaCloudClient implements WhatsAppClient
         }
 
         $payload = [
-            'messaging_product' => 'whatsapp',
+            'messaging_product'        => 'whatsapp',
             'message_send_ttl_seconds' => 900,
-            'to'                => $this->normalizePhone($to),
-            'type'              => 'template',
-            'template'          => [
+            'to'                       => $this->normalizePhone($to),
+            'type'                     => 'template',
+            'template'                 => [
                 'name'       => $templateName,
                 'language'   => ['code' => $language],
                 'components' => $components,

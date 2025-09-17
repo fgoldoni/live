@@ -61,6 +61,13 @@ class User extends Authenticatable
         ];
     }
 
+    public function guardName(): string
+    {
+        return method_exists($this, 'getDefaultGuardName')
+            ? $this->getDefaultGuardName()
+            : (config('permission.defaults.guard') ?? config('auth.defaults.guard', 'web'));
+    }
+
     public function initials(): string
     {
         return Str::of($this->name)
@@ -112,7 +119,7 @@ class User extends Authenticatable
                 /** @var string|null $iso2 */
                 $iso2 = $this->getAttribute('phone_country_iso2');
 
-                if (! $iso2) {
+                if (!$iso2) {
                     return false;
                 }
 

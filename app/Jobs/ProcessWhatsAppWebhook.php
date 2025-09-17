@@ -1,22 +1,17 @@
 <?php
 
+// app/Jobs/ProcessWhatsAppWebhook.php
+declare(strict_types=1);
+
 namespace App\Jobs;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Spatie\WebhookClient\Models\WebhookCall;
+use App\Contracts\WhatsApp\WhatsAppWebhookHandler;
+use Spatie\WebhookClient\Jobs\ProcessWebhookJob as SpatieProcessWebhookJob;
 
-class ProcessWhatsAppWebhook implements ShouldQueue
+final class ProcessWhatsAppWebhook extends SpatieProcessWebhookJob
 {
-    use Dispatchable, Queueable;
-
-    public function __construct(public WebhookCall $webhookCall) {}
-
     public function handle(): void
     {
-        $payload = $this->webhookCall->payload;
-
-        dd($payload);
+        app(WhatsAppWebhookHandler::class)->handle($this->webhookCall->payload);
     }
 }

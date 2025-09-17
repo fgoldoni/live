@@ -15,6 +15,7 @@
         "getbrevo/brevo-php": "^2.0",
         "goldoni/laravel-model-permissions": "dev-main",
         "goldoni/laravel-virtual-wallet": "dev-main",
+        "goldoni/core-repositories": "dev-main",
         "guzzlehttp/guzzle": "^7.10",
         "laravel-lang/common": "^6.7",
         "laravel/framework": "^12.0",
@@ -23,6 +24,7 @@
         "livewire/flux": "^2.1.1",
         "livewire/flux-pro": "^2.3",
         "livewire/volt": "^1.7.0",
+        "opcodesio/log-viewer": "^3.19",
         "propaganistas/laravel-phone": "^6.0",
         "spatie/image-optimizer": "^1.8",
         "spatie/laravel-medialibrary": "^11.14",
@@ -42,6 +44,7 @@
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.45",
+        "laravel/telescope": "^5.11",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^4.1",
@@ -126,6 +129,14 @@
             "options": {
                 "symlink": true
             }
+        },
+        "2": {
+            "type": "vcs",
+            "url": "https://github.com/fgoldoni/core-repositories.git"
+        },
+        "3": {
+            "type": "vcs",
+            "url": "https://github.com/fgoldoni/laravel-cart.git"
         }
     },
     "minimum-stability": "stable",

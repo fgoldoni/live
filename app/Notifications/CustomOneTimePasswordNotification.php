@@ -81,8 +81,8 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
             'type'              => 'template',
             'language'          => ['code' => 'en_US'],
             'template'          => [
-                'name'      => 'otp_code',
-                'variables' => [$code, $supportPhone],
+                'name'          => 'otp_code',
+                'variables'     => [$code, $supportPhone],
                 'urlParameters' => [$code],
             ],
         ];

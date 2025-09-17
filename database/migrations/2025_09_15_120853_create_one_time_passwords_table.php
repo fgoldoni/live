@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    use \Core\Traits\Database\Migration;
+    use \Core\Traits\Database\DisableForeignKeys;
     public function up(): void
     {
         $driver = DB::getDriverName();
@@ -27,5 +29,12 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
         });
+    }
+
+    public function down(): void
+    {
+        $this->disableForeignKeys();
+        Schema::dropIfExists('one_time_passwords');
+        $this->enableForeignKeys();
     }
 };

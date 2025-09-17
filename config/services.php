@@ -43,6 +43,10 @@ return [
         'access_token'    => env('WA_ACCESS_TOKEN'),
         'support_phone'    => env('SUPPORT_PHONE', '+4917647159315'),
         'webhook_verify_token' => env('WHATSAPP_WEBHOOK_VERIFY_TOKEN'),
+        'retention' => [
+            'days' => env('WA_RETENTION_DAYS', 30),
+            'keep_last' => env('WA_KEEP_LAST', 100000),
+        ],
     ],
 
 
