@@ -35,3 +35,4 @@ parameters:
     - public/*
     - resources/*
     - node_modules/*
+    - app/Nova/Resource.php

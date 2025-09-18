@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\User;
+use Goldoni\ModelPermissions\Policies\BaseModelPolicy;
 use Illuminate\Database\Eloquent\Model;
 use Override;
-use Sereny\NovaPermissions\Policies\BasePolicy;
 
-final class UserPolicy extends BasePolicy
+final class UserPolicy extends BaseModelPolicy
 {
-    /** @var string */
-    protected $key = 'user';
+    protected string $modelClass = User::class;
 
     public function before(User $user, string $ability): ?bool
     {
-        if (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
+        if ($user->isSuperAdmin()) {
             return true;
         }
 
@@ -24,15 +23,15 @@ final class UserPolicy extends BasePolicy
     }
 
     #[Override]
-    public function viewAny(Model $user): bool
+    public function viewAny(Model $model): bool
     {
-        return $this->hasPermissionTo($user, 'viewAny');
+        return $this->hasPermissionTo($model, 'viewAny');
     }
 
     #[Override]
-    public function view(Model $user, $model): bool
+    public function view(Model $user, Model $model): bool
     {
-        if ($this->hasPermissionTo($user, 'view')) {
+        if ($this->hasPermissionTo($user, 'view', $model)) {
             return true;
         }
 
@@ -40,15 +39,15 @@ final class UserPolicy extends BasePolicy
     }
 
     #[Override]
-    public function create(Model $user): bool
+    public function create(Model $model): bool
     {
-        return $this->hasPermissionTo($user, 'create');
+        return $this->hasPermissionTo($model, 'create');
     }
 
     #[Override]
-    public function update(Model $user, $model): bool
+    public function update(Model $user, Model $model): bool
     {
-        if ($this->hasPermissionTo($user, 'update')) {
+        if ($this->hasPermissionTo($user, 'update', $model)) {
             return true;
         }
 
@@ -56,20 +55,20 @@ final class UserPolicy extends BasePolicy
     }
 
     #[Override]
-    public function delete(Model $user, $model): bool
+    public function delete(Model $user, Model $model): bool
     {
-        return $this->hasPermissionTo($user, 'delete') && (int) $user->getKey() !== (int) $model->getKey();
+        return $this->hasPermissionTo($user, 'delete', $model) && (int) $user->getKey() !== (int) $model->getKey();
     }
 
     #[Override]
-    public function restore(Model $user, $model): bool
+    public function restore(Model $user, Model $model): bool
     {
-        return $this->hasPermissionTo($user, 'restore');
+        return $this->hasPermissionTo($user, 'restore', $model);
     }
 
     #[Override]
-    public function forceDelete(Model $user, $model): bool
+    public function forceDelete(Model $user, Model $model): bool
     {
-        return $this->hasPermissionTo($user, 'forceDelete');
+        return $this->hasPermissionTo($user, 'forceDelete', $model);
     }
 }

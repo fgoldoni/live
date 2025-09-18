@@ -15,6 +15,9 @@ return [
     ],
     'models' => [
         User::class,
+        \App\Models\WhatsAppMessage::class,
+        \App\Models\OneTimePassword::class,
+        \App\Models\PasswordlessToken::class,
         \Goldoni\LaravelTeams\Models\Team::class,
         \Modules\Events\Models\Event::class,
     ],

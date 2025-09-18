@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\User;
+use Goldoni\LaravelTeams\Models\Team;
+use Goldoni\ModelPermissions\Policies\BaseModelPolicy;
 use Illuminate\Database\Eloquent\Model;
 use Override;
-use Sereny\NovaPermissions\Policies\BasePolicy;
 
-final class TeamPolicy extends BasePolicy
+final class TeamPolicy extends BaseModelPolicy
 {
-    /** @var string */
-    protected $key = 'team';
+    protected string $modelClass = Team::class;
 
     public function before(User $user): ?bool
     {
-        if (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
+        if ($user->isSuperAdmin()) {
             return true;
         }
 
@@ -24,25 +24,25 @@ final class TeamPolicy extends BasePolicy
     }
 
     #[Override]
-    public function viewAny(Model $user): bool
+    public function viewAny(Model $model): bool
     {
-        return $this->hasPermissionTo($user, 'viewAny');
+        return $this->hasPermissionTo($model, 'viewAny');
     }
 
     #[Override]
-    public function view(Model $user, $team): bool
+    public function view(Model $user, Model $team): bool
     {
         if ($this->hasPermissionTo($user, 'viewAny')) {
             return true;
         }
 
-        return $this->hasPermissionTo($user, 'view') && $user->isOnTeam($team);
+        return $this->hasPermissionTo($user, 'view', $team) && $this->userIsOnTeam($user, $team);
     }
 
     #[Override]
-    public function create(Model $user): bool
+    public function create(Model $model): bool
     {
-        if (! $this->hasPermissionTo($user, 'create')) {
+        if (!$this->hasPermissionTo($model, 'create')) {
             return false;
         }
 
@@ -52,42 +52,52 @@ final class TeamPolicy extends BasePolicy
             return true;
         }
 
-        return $user->allTeams()->count() < $max;
+        return $this->userAllTeamsCount($model) < $max;
     }
 
     #[Override]
-    public function update(Model $user, $team): bool
+    public function update(Model $user, Model $team): bool
     {
-        return $this->hasPermissionTo($user, 'update') && $user->isOnTeam($team);
+        return $this->hasPermissionTo($user, 'update', $team) && $this->userIsOnTeam($user, $team);
     }
 
     #[Override]
-    public function delete(Model $user, $team): bool
+    public function delete(Model $user, Model $team): bool
     {
-        return $this->hasPermissionTo($user, 'delete') && $user->isOnTeam($team);
+        return $this->hasPermissionTo($user, 'delete', $team) && $this->userIsOnTeam($user, $team);
     }
 
     #[Override]
-    public function restore(Model $user, $team): bool
+    public function restore(Model $user, Model $team): bool
     {
-        return $this->hasPermissionTo($user, 'restore') && $user->isOnTeam($team);
+        return $this->hasPermissionTo($user, 'restore', $team) && $this->userIsOnTeam($user, $team);
     }
 
     #[Override]
-    public function forceDelete(Model $user, $team): bool
+    public function forceDelete(Model $user, Model $team): bool
     {
-        return $this->hasPermissionTo($user, 'forceDelete') && $user->isOnTeam($team);
+        return $this->hasPermissionTo($user, 'forceDelete', $team) && $this->userIsOnTeam($user, $team);
     }
 
-    public function manageMembers(Model $model, $team): bool
+    public function manageMembers(Model $user, Model $team): bool
     {
-        if ($this->hasPermissionTo($model, 'attachAny') || $this->hasPermissionTo($model, 'detachAny')) {
+        if ($this->hasPermissionTo($user, 'attachAny') || $this->hasPermissionTo($user, 'detachAny')) {
             return true;
         }
 
-        $canAttach = $this->hasPermissionTo($model, 'attach') && $model->isOnTeam($team);
-        $canDetach = $this->hasPermissionTo($model, 'detach') && $model->isOnTeam($team);
+        $canAttach = $this->hasPermissionTo($user, 'attach', $team) && $this->userIsOnTeam($user, $team);
+        $canDetach = $this->hasPermissionTo($user, 'detach', $team) && $this->userIsOnTeam($user, $team);
 
         return $canAttach || $canDetach;
+    }
+
+    private function userIsOnTeam(Model $model, Model $team): bool
+    {
+        return $model instanceof User && $team instanceof Team && $model->isOnTeam($team);
+    }
+
+    private function userAllTeamsCount(Model $model): int
+    {
+        return $model instanceof User ? $model->allTeams()->count() : 0;
     }
 }
