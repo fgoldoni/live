@@ -6,8 +6,10 @@ namespace App\Models;
 
 use App\Models\Concerns\HasExtraUlid;
 use App\Models\Concerns\HasRoleScopes;
+use App\Policies\UserPolicy;
 use Goldoni\LaravelTeams\Concerns\HasTeams;
 use Goldoni\LaravelVirtualWallet\Traits\HasWallets;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,10 +19,10 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 use libphonenumber\PhoneNumberUtil;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
-use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
 use Throwable;
 
+#[UsePolicy(UserPolicy::class)]
 class User extends Authenticatable
 {
     use HasFactory;

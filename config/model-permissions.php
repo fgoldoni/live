@@ -14,7 +14,9 @@ return [
         'user'        => 'User',
     ],
     'models' => [
-        User::class
+        User::class,
+        \Goldoni\LaravelTeams\Models\Team::class,
+        \Modules\Events\Models\Event::class,
     ],
     'abilities' => [
         'viewAny', 'view', 'create', 'update', 'delete', 'deleteAny',
@@ -22,6 +24,7 @@ return [
         'replicate', 'reorder', 'attach', 'attachAny', 'detach', 'detachAny',
     ],
     'global_permissions' => [
+        'nova',
         'impersonate',
     ],
     'role_ability_map' => [
@@ -42,8 +45,8 @@ return [
     ],
     'role_global_permissions' => [
         'Super Admin' => ['*'],
-        'Manager'     => ['impersonate'],
-        'Seller'      => [],
+        'Manager'     => ['nova', 'impersonate'],
+        'Seller'     => ['nova'],
         'User'        => [],
     ],
 ];

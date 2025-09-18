@@ -14,12 +14,14 @@
         "endroid/qr-code": "^6.0",
         "getbrevo/brevo-php": "^2.0",
         "goldoni/core-repositories": "dev-main",
+        "goldoni/laravel-model-permissions": "dev-main",
         "goldoni/laravel-teams": "dev-main",
         "goldoni/laravel-virtual-wallet": "dev-main",
         "guzzlehttp/guzzle": "^7.10",
         "khsing/world": "^0.9.0",
         "laravel-lang/common": "^6.7",
         "laravel/framework": "^12.0",
+        "laravel/nova": "^5.0",
         "laravel/tinker": "^2.10.1",
         "laravel/vonage-notification-channel": "^3.3",
         "livewire/flux": "^2.1.1",
@@ -28,6 +30,7 @@
         "nwidart/laravel-modules": "^12.0",
         "opcodesio/log-viewer": "^3.19",
         "propaganistas/laravel-phone": "^6.0",
+        "sereny/nova-permissions": "^1.7",
         "spatie/image-optimizer": "^1.8",
         "spatie/laravel-medialibrary": "^11.14",
         "spatie/laravel-one-time-passwords": "^1.0",
@@ -43,6 +46,7 @@
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.0",
         "laravel/boost": "^1.1",
+        "laravel/nova-devtool": "^1.8",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.45",
@@ -124,6 +128,10 @@
         "flux-pro": {
             "type": "composer",
             "url": "https://composer.fluxui.dev"
+        },
+        "nova": {
+            "type": "composer",
+            "url": "https://nova.laravel.com"
         },
         "0": {
             "type": "path",

@@ -19,6 +19,6 @@ class DatabaseSeeder extends Seeder
             'phone' => '+4917647159315',
         ]);
 
-        User::factory(10)->withTeam()->asUser()->create();
+        User::factory(10)->asUser()->create();
     }
 }
