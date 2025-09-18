@@ -31,9 +31,7 @@ class User extends Authenticatable
     use HasRoleScopes;
     use HasOneTimePasswords;
     use HasTeams;
-    use HasRoles {
-        assignRole as private spatieAssignRole;
-    }
+    use HasRoles;
 
     protected $fillable = [
         'name',
@@ -61,14 +59,6 @@ class User extends Authenticatable
             'password'          => 'hashed'
         ];
     }
-
-    public function assignRole(...$roles): static
-    {
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        return $this->spatieAssignRole(...$roles);
-    }
-
 
 
     public function initials(): string
