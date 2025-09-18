@@ -11,7 +11,13 @@
 |
 */
 
+use Illuminate\Support\Facades\Notification;
+
 pest()->extend(Tests\TestCase::class)
+    ->beforeEach(function () {
+        Notification::fake();
+        config()->set('teams.invite_notifications', false);
+    })
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature', 'Unit');
 

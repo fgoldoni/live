@@ -21,7 +21,7 @@ final readonly class UpsertMessageStatus
 
     public function execute(MessageStatusDto $messageStatusDto): void
     {
-        $before = WhatsAppMessage::query()->where('wamid', $messageStatusDto->wamid)->value('status');
+        $before           = WhatsAppMessage::query()->where('wamid', $messageStatusDto->wamid)->value('status');
         $whatsAppMessage  = $this->whatsAppMessageRepository->upsertStatus($messageStatusDto);
 
         if ($before !== $whatsAppMessage->status) {

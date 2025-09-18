@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\WhatsApp;
 
-use App\Contracts\WhatsApp\WhatsAppWebhookHandler;
 use App\Actions\WhatsApp\UpsertMessageStatus;
+use App\Contracts\WhatsApp\WhatsAppWebhookHandler;
 use App\DTO\WhatsApp\MessageStatusDto;
 use App\Enums\WhatsAppStatus;
 use Carbon\Carbon;

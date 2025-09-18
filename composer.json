@@ -13,10 +13,11 @@
         "artesaos/seotools": "^1.3",
         "endroid/qr-code": "^6.0",
         "getbrevo/brevo-php": "^2.0",
-        "goldoni/laravel-model-permissions": "dev-main",
-        "goldoni/laravel-virtual-wallet": "dev-main",
         "goldoni/core-repositories": "dev-main",
+        "goldoni/laravel-teams": "dev-main",
+        "goldoni/laravel-virtual-wallet": "dev-main",
         "guzzlehttp/guzzle": "^7.10",
+        "khsing/world": "^0.9.0",
         "laravel-lang/common": "^6.7",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
@@ -24,6 +25,7 @@
         "livewire/flux": "^2.1.1",
         "livewire/flux-pro": "^2.3",
         "livewire/volt": "^1.7.0",
+        "nwidart/laravel-modules": "^12.0",
         "opcodesio/log-viewer": "^3.19",
         "propaganistas/laravel-phone": "^6.0",
         "spatie/image-optimizer": "^1.8",
@@ -59,7 +61,8 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Core\\": "core/"
+            "Core\\": "core/",
+            "Modules\\": "Modules/"
         }
     },
     "autoload-dev": {
@@ -100,6 +103,11 @@
     "extra": {
         "laravel": {
             "dont-discover": []
+        },
+        "merge-plugin": {
+            "include": [
+                "Modules/*/composer.json"
+            ]
         }
     },
     "config": {
@@ -108,7 +116,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "wikimedia/composer-merge-plugin": true
         }
     },
     "repositories": {
@@ -137,6 +146,13 @@
         "3": {
             "type": "vcs",
             "url": "https://github.com/fgoldoni/laravel-cart.git"
+        },
+        "4": {
+            "type": "path",
+            "url": "packages/goldoni/laravel-teams",
+            "options": {
+                "symlink": true
+            }
         }
     },
     "minimum-stability": "stable",

@@ -64,9 +64,4 @@ trait HasRoleScopes
 
         return (string) ($roles[$key] ?? ucfirst(str_replace('_', ' ', $key)));
     }
-
-    protected static function guardName(): string
-    {
-        return (string) config('model-permissions.guard_name', config('auth.defaults.guard', 'web'));
-    }
 }

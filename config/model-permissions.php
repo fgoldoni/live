@@ -14,7 +14,7 @@ return [
         'user'        => 'User',
     ],
     'models' => [
-        User::class,
+        User::class
     ],
     'abilities' => [
         'viewAny', 'view', 'create', 'update', 'delete', 'deleteAny',
