@@ -14,7 +14,7 @@ final class TeamPolicy extends BaseModelPolicy
 {
     protected string $modelClass = Team::class;
 
-    public function before(User $user): ?bool
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->isSuperAdmin()) {
             return true;
@@ -42,12 +42,11 @@ final class TeamPolicy extends BaseModelPolicy
     #[Override]
     public function create(Model $model): bool
     {
-        if (!$this->hasPermissionTo($model, 'create')) {
+        if (! $this->hasPermissionTo($model, 'create')) {
             return false;
         }
 
         $max = (int) config('teams.max_teams_per_user', 0);
-
         if ($max === 0) {
             return true;
         }
@@ -81,6 +80,10 @@ final class TeamPolicy extends BaseModelPolicy
 
     public function manageMembers(Model $user, Model $team): bool
     {
+        if ($this->isOwnerOrAdmin($user, $team)) {
+            return true;
+        }
+
         if ($this->hasPermissionTo($user, 'attachAny') || $this->hasPermissionTo($user, 'detachAny')) {
             return true;
         }
@@ -91,6 +94,55 @@ final class TeamPolicy extends BaseModelPolicy
         return $canAttach || $canDetach;
     }
 
+    public function transferOwnership(Model $user, Model $team): bool
+    {
+        if (! $this->userIsOnTeam($user, $team)) {
+            return false;
+        }
+
+        if ($this->isOwnerOrAdmin($user, $team)) {
+            return true;
+        }
+
+        return $this->hasPermissionTo($user, 'transferOwnership', $team);
+    }
+
+    public function invite(Model $user, Model $team): bool
+    {
+        if (! $this->userIsOnTeam($user, $team)) {
+            return false;
+        }
+
+        if ($this->isOwnerOrAdmin($user, $team)) {
+            return true;
+        }
+
+        return $this->hasPermissionTo($user, 'invite', $team);
+    }
+
+    public function leave(Model $user, Model $team): bool
+    {
+        if (! $this->userIsOnTeam($user, $team)) {
+            return false;
+        }
+
+        if ($this->isOwner($user, $team)) {
+            return false;
+        }
+
+        return $this->hasPermissionTo($user, 'leave', $team);
+    }
+
+    public function acceptInvite(Model $user, Model $team): bool
+    {
+        return $this->hasPermissionTo($user, 'acceptInvite', $team);
+    }
+
+    public function declineInvite(Model $user, Model $team): bool
+    {
+        return $this->hasPermissionTo($user, 'declineInvite', $team);
+    }
+
     private function userIsOnTeam(Model $model, Model $team): bool
     {
         return $model instanceof User && $team instanceof Team && $model->isOnTeam($team);
@@ -99,5 +151,27 @@ final class TeamPolicy extends BaseModelPolicy
     private function userAllTeamsCount(Model $model): int
     {
         return $model instanceof User ? $model->allTeams()->count() : 0;
+    }
+
+    private function isOwner(Model $model, Model $team): bool
+    {
+        return $model instanceof User && $team instanceof Team && $model->ownsTeam($team);
+    }
+
+    private function isOwnerOrAdmin(Model $model, Model $team): bool
+    {
+        if (! ($model instanceof User && $team instanceof Team)) {
+            return false;
+        }
+
+        if ($model->ownsTeam($team)) {
+            return true;
+        }
+
+        if (method_exists($model, 'hasTeamRoleAdmin')) {
+            return $model->hasTeamRoleAdmin($team);
+        }
+
+        return false;
     }
 }
