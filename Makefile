@@ -93,7 +93,6 @@ migrate: optimize ## migrate
 	$(PHP) artisan migrate:refresh
 
 refresh: migrate ## refresh + php artisan module:seed Admin & php artisan module:seed Support
-	php artisan model-permissions:sync --with-roles --reset
 	php artisan db:seed
 	## php artisan module:migrate-refresh Users
 	## php artisan module:migrate-refresh Companies

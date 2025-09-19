@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-it('assigns the User role to a user', function () {
+it('assigns the User role to a user', function (): void {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     $guard = config('model-permissions.guard_name', config('auth.defaults.guard', 'web'));

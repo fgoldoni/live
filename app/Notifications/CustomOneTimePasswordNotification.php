@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use Override;
 use App\Notifications\Channels\WhatsAppChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -26,6 +27,7 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
     }
 
     /** @return array<string> */
+    #[Override]
     public function via(object $notifiable): array
     {
         return array_map(
@@ -34,6 +36,7 @@ final class CustomOneTimePasswordNotification extends OneTimePasswordNotificatio
         );
     }
 
+    #[Override]
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)

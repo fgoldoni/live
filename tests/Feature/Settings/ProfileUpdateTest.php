@@ -1,27 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use App\Models\User;
 use Livewire\Volt\Volt;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
-test('profile page is displayed', function () {
+test('profile page is displayed', function (): void {
     $this->actingAs($user = User::factory()->create());
 
     $this->get(route('profile.edit'))->assertOk();
 });
 
-test('profile information can be updated', function () {
+test('profile information can be updated', function (): void {
     $user = User::factory()->create();
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.profile')
+    $testable = Volt::test('settings.profile')
         ->set('name', 'Test User')
         ->set('email', 'test@example.com')
         ->call('updateProfileInformation');
 
-    $response->assertHasNoErrors();
+    $testable->assertHasNoErrors();
 
     $user->refresh();
 
@@ -30,31 +34,31 @@ test('profile information can be updated', function () {
     expect($user->email_verified_at)->toBeNull();
 });
 
-test('email verification status is unchanged when email address is unchanged', function () {
+test('email verification status is unchanged when email address is unchanged', function (): void {
     $user = User::factory()->create();
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.profile')
+    $testable = Volt::test('settings.profile')
         ->set('name', 'Test User')
         ->set('email', $user->email)
         ->call('updateProfileInformation');
 
-    $response->assertHasNoErrors();
+    $testable->assertHasNoErrors();
 
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
-test('user can delete their account', function () {
+test('user can delete their account', function (): void {
     $user = User::factory()->create();
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.delete-user-form')
+    $testable = Volt::test('settings.delete-user-form')
         ->set('password', 'password')
         ->call('deleteUser');
 
-    $response
+    $testable
         ->assertHasNoErrors()
         ->assertRedirect('/');
 
@@ -68,16 +72,16 @@ test('user can delete their account', function () {
     expect(auth()->check())->toBeFalse();
 });
 
-test('correct password must be provided to delete account', function () {
+test('correct password must be provided to delete account', function (): void {
     $user = User::factory()->create();
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.delete-user-form')
+    $testable = Volt::test('settings.delete-user-form')
         ->set('password', 'wrong-password')
         ->call('deleteUser');
 
-    $response->assertHasErrors(['password']);
+    $testable->assertHasErrors(['password']);
 
     expect($user->fresh())->not->toBeNull();
 });

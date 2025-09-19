@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -11,14 +15,16 @@
 |
 */
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-pest()->extend(Tests\TestCase::class)
-    ->beforeEach(function () {
+pest()->extend(TestCase::class)
+    ->beforeEach(function (): void {
         Notification::fake();
         config()->set('teams.invite_notifications', false);
     })
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature', 'Unit');
 
 /*
@@ -32,9 +38,7 @@ pest()->extend(Tests\TestCase::class)
 |
 */
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
+expect()->extend('toBeOne', fn() => $this->toBe(1));
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +51,9 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+
+
+function createAdmin(array $overrides = []): User
 {
-    // ..
+    return User::factory()->asSuperAdmin()->create($overrides);
 }

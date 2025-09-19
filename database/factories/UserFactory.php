@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
-/**
- * @extends Factory<User>
- */
 class UserFactory extends Factory
 {
     protected static ?string $password = null;

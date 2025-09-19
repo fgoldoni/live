@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Override;
 use App\Models\User;
 use App\Nova\Dashboards\Main;
 use Illuminate\Support\Facades\Blade;
@@ -20,6 +21,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     /**
      * Bootstrap any application services.
      */
+    #[Override]
     public function boot(): void
     {
         parent::boot();
@@ -39,6 +41,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     /**
      * Register the configurations for Laravel Fortify.
      */
+    #[Override]
     protected function fortify(): void
     {
         Nova::fortify()
@@ -53,6 +56,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     /**
      * Register the Nova routes.
      */
+    #[Override]
     protected function routes(): void
     {
         Nova::routes()
@@ -67,6 +71,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
      *
      * This gate determines who can access Nova in non-local environments.
      */
+    #[Override]
     protected function gate(): void
     {
         Gate::define('viewNova', fn (User $user): bool => $user->hasPermissionTo('nova'));
@@ -77,6 +82,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
      *
      * @return array<int, Dashboard>
      */
+    #[Override]
     protected function dashboards(): array
     {
         return [
@@ -89,6 +95,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
      *
      * @return array<int, Tool>
      */
+    #[Override]
     public function tools(): array
     {
         return [
@@ -99,6 +106,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     /**
      * Register any application services.
      */
+    #[Override]
     public function register(): void
     {
         parent::register();

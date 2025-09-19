@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Override;
 use App\Contracts\Auth\MagicLinkGenerator;
 use App\Contracts\Auth\PhoneNormalizer;
 use App\Contracts\Geo\CountryResolver;
@@ -28,6 +29,7 @@ use LogicException;
 
 final class BindingServiceProvider extends ServiceProvider implements DeferrableProvider
 {
+    #[Override]
     public function register(): void
     {
         $this->app->singleton(WhatsAppClientContract::class, static fn (Container $container): MetaCloudClient => new MetaCloudClient($container->make(HttpFactory::class)));
@@ -68,6 +70,7 @@ final class BindingServiceProvider extends ServiceProvider implements Deferrable
     /**
      * @return array<int, class-string>
      */
+    #[Override]
     public function provides(): array
     {
         return [

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use Livewire\Volt\Volt;
 
-it('can render', function () {
-    $component = Volt::test('otp.verify.phone');
+it('can render', function (): void {
+    $testable = Volt::test('otp.verify.phone');
 
-    $component->assertSee('');
+    $testable->assertSee('');
 });

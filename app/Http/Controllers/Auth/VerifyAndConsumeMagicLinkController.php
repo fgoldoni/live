@@ -15,13 +15,13 @@ use Psr\Log\LoggerInterface;
 
 final readonly class VerifyAndConsumeMagicLinkController
 {
-    private const ROUTE_DASHBOARD = 'dashboard';
+    private const string ROUTE_DASHBOARD = 'dashboard';
 
-    private const ROUTE_LOGIN = 'login';
+    private const string ROUTE_LOGIN = 'login';
 
-    private const MSG_ALREADY = 'This magic link was already used. You are signed in.';
+    private const string MSG_ALREADY = 'This magic link was already used. You are signed in.';
 
-    private const MSG_INVALID = 'This magic link is invalid or already used.';
+    private const string MSG_INVALID = 'This magic link is invalid or already used.';
 
     public function __construct(
         private VerifyMagicLinkAndLogin $verifyMagicLinkAndLogin,

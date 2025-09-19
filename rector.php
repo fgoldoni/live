@@ -13,6 +13,7 @@ return RectorConfig::configure()
         __DIR__ . '/packages/goldoni/laravel-model-permissions',
         __DIR__ . '/packages/goldoni/laravel-teams',
         __DIR__ . '/app',
+        __DIR__ . '/tests',
     ])
 
     ->withSkip([
