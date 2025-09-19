@@ -2,15 +2,22 @@
 
 declare(strict_types=1);
 
-use Goldoni\LaravelTeams\Actions\CreateTeam;
+use App\Models\User;
 use Goldoni\LaravelTeams\Models\Team;
 
 it('switches users away from deleted current team when observer installed', function (): void {
-    $user = createAdmin();
-    $team  = app(CreateTeam::class)->handle($user, 'Acme');
-    $user->refresh();
-    expect($user->current_team_id)->toBe($team->id);
-    Team::query()->whereKey($team->id)->delete();
-    $user->refresh();
-    expect($user->current_team_id)->toBeNull()->or()->toBeInt();
+    $applicationUser = User::factory()->create();
+    $teamRecord      = Team::query()->create([
+        'ulid'     => (string) Str::ulid(),
+        'name'     => 'Acme',
+        'owner_id' => $applicationUser->id,
+    ]);
+
+    $applicationUser->forceFill(['current_team_id' => $teamRecord->id])->save();
+    $applicationUser->refresh();
+    expect($applicationUser->current_team_id)->toBe($teamRecord->id);
+
+    $teamRecord->delete();
+    $applicationUser->refresh();
+    expect($applicationUser->current_team_id)->toBeNull();
 });

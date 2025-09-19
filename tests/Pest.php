@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-use Tests\TestCase;
-
+use App\Models\User;
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -15,14 +14,14 @@ use Tests\TestCase;
 |
 */
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->beforeEach(function (): void {
         Notification::fake();
-        config()->set('teams.invite_notifications', false);
+        config()->set('teams.invite_notifications', true);
     })
     ->use(RefreshDatabase::class)
     ->in('Feature', 'Unit');
@@ -38,7 +37,7 @@ pest()->extend(TestCase::class)
 |
 */
 
-expect()->extend('toBeOne', fn() => $this->toBe(1));
+expect()->extend('toBeOne', fn () => $this->toBe(1));
 
 /*
 |--------------------------------------------------------------------------
