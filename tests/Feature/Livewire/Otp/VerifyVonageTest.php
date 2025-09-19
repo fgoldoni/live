@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-use Livewire\Volt\Volt;
+use App\Models\User;
 
 it('can render', function (): void {
-    $testable = Volt::test('otp.verify-vonage');
+    $user = User::factory()->create();
+    $this->actingAs($user);
 
-    $testable->assertSee('');
+    $this->get(route('otp.verify-vonage'))->assertOk();
 });

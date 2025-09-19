@@ -22,7 +22,7 @@ class UserFactory extends Factory
     {
         return [
             'name'              => fake()->name(),
-            'ulid'              => Str::ulid(),
+            'ulid'              => (string) Str::ulid(),
             'email'             => fake()->unique()->safeEmail(),
             'phone'             => fake()->e164PhoneNumber(),
             'email_verified_at' => now(),

@@ -11,14 +11,19 @@ final class EnsureVerifiedWithOtp
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        $user = $request->user();
+        $authenticatedUser = $request->user();
 
-        if (!$user) {
+        if (! $authenticatedUser) {
             return redirect()->route('login');
         }
 
-        if (($user->email && is_null($user->email_verified_at)) || ($user->phone && is_null($user->phone_verified_at))) {
-            return $request->expectsJson() ? abort(403, 'Verification required.') : redirect()->route('otp.verify');
+        $emailNeedsVerification = $authenticatedUser->email && is_null($authenticatedUser->email_verified_at);
+        $phoneNeedsVerification = $authenticatedUser->phone && is_null($authenticatedUser->phone_verified_at);
+
+        if ($emailNeedsVerification || $phoneNeedsVerification) {
+            return $request->expectsJson()
+                ? abort(403, 'Verification required.')
+                : redirect()->route('otp.verify');
         }
 
         return $next($request);

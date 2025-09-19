@@ -33,7 +33,7 @@ it('createTeam creates records and dispatches event', function (): void {
             TeamUser::query()
                 ->where('team_id', $team->id)
                 ->where('user_id', $user->id)
-                ->where('role', TeamRoleEnum::OWNER->value)
+                ->where('role', TeamRoleEnum::OWNER)
                 ->exists()
         )->toBeTrue();
     Event::assertDispatched(TeamCreated::class);
@@ -62,7 +62,7 @@ it('switchTeam switches when user belongs', function (): void {
     $team   = app(CreateTeam::class)->handle($user, 'Acme');
     $member = User::factory()->create();
     $member->teams()->attach($team->id, [
-        'role' => TeamRoleEnum::MEMBER->value,
+        'role' => TeamRoleEnum::MEMBER,
         'ulid' => (string) Str::ulid(),
     ]);
     $this->actingAs($member);
@@ -86,13 +86,13 @@ it('transferOwnership updates pivot and team owner and dispatches event', functi
                 ->where('team_id', $team->id)
                 ->where('user_id', $user->id)
                 ->value('role')
-        )->toBe(TeamRoleEnum::ADMIN->value)
+        )->toBe(TeamRoleEnum::ADMIN)
         ->and(
             TeamUser::query()
                 ->where('team_id', $team->id)
                 ->where('user_id', $newOwner->id)
                 ->value('role')
-        )->toBe(TeamRoleEnum::OWNER->value);
+        )->toBe(TeamRoleEnum::OWNER);
     Event::assertDispatched(TeamOwnershipTransferred::class);
 });
 

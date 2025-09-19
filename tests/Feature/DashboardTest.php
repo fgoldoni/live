@@ -13,7 +13,11 @@ test('guests are redirected to the login page', function (): void {
 });
 
 test('authenticated users can visit the dashboard', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+        'phone_verified_at' => now(),
+    ]);
+
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));

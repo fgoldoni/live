@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'otp.verified' => EnsureVerifiedWithOtp::class
         ]);
         $middleware->validateCsrfTokens(except: [
-            'webhooks/whatsapp'
+            'webhooks/whatsapp',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
