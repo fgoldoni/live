@@ -7,8 +7,12 @@ namespace App\Nova;
 use App\Models\User as UserModel;
 use Laravel\Nova\Fields\Field;
 use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\MorphToMany;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Tabs\Tab;
+use Sereny\NovaPermissions\Nova\Permission;
+use Sereny\NovaPermissions\Nova\Role;
 
 class User extends Resource
 {
@@ -33,6 +37,21 @@ class User extends Resource
                 ->rules('required', 'email', 'max:255')
                 ->creationRules('unique:users,email')
                 ->updateRules('unique:users,email,{{resourceId}}'),
+            Text::make('Roles', fn ($model) => $model->roles->implode('name', ', '))->hide()->showOnIndex()->canSee(
+                fn ($request) => $request->user()->hasPermissionTo('manager')
+            ),
+            \Laravel\Nova\Fields\Tag::make('Roles', 'roles', Role::class)->canSee(
+                fn ($request) => $request->user()->isSuperAdmin()
+            )->onlyOnForms(),
+            Tab::group('Roles & Permissions', [
+                MorphToMany::make('Roles', 'roles', Role::class)->canSee(
+                    fn ($request) => $request->user()->isSuperAdmin()
+                ),
+
+                MorphToMany::make('Permissions', 'permissions', Permission::class)->canSee(
+                    fn ($request) => $request->user()->isSuperAdmin()
+                ),
+            ]),
         ];
     }
 }

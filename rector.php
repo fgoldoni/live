@@ -9,11 +9,12 @@ use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
     ->withPaths([
-        __DIR__ . '/packages/goldoni/laravel-virtual-wallet',
-        __DIR__ . '/packages/goldoni/laravel-model-permissions',
-        __DIR__ . '/packages/goldoni/laravel-teams',
+//        __DIR__ . '/packages/goldoni/laravel-virtual-wallet',
+//        __DIR__ . '/packages/goldoni/laravel-model-permissions',
+//        __DIR__ . '/packages/goldoni/laravel-teams',
         __DIR__ . '/app',
-        __DIR__ . '/tests',
+//        __DIR__ . '/tests',
+        __DIR__ . '/Modules',
     ])
 
     ->withSkip([

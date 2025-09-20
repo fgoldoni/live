@@ -17,6 +17,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use Laravel\Nova\Auth\Impersonatable;
 use libphonenumber\PhoneNumberUtil;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Spatie\Permission\Traits\HasRoles;
@@ -34,6 +35,7 @@ class User extends Authenticatable
     use HasOneTimePasswords;
     use HasTeams;
     use HasRoles;
+    use Impersonatable;
 
     protected $fillable = [
         'name',
@@ -120,5 +122,16 @@ class User extends Authenticatable
                 return in_array($iso2, config('countries.africa_iso2'), true);
             }
         );
+    }
+
+    public function canImpersonate(): bool
+    {
+        return $this->hasPermissionTo('impersonate');
+    }
+
+
+    public function canBeImpersonated(): bool
+    {
+        return !$this->trashed() && ($this->hasRole(config('model-permissions.roles.seller')) || $this->hasRole(config('model-permissions.roles.manager')));
     }
 }

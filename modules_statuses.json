@@ -1,3 +1,6 @@
 {
-    "Events": true
+    "Events": true,
+    "Categories": true,
+    "Countries": true,
+    "Tags": true
 }

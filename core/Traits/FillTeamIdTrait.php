@@ -1,35 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Core\Traits;
 
-use Illuminate\Database\Eloquent\Builder;
-use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Nova;
 
 trait FillTeamIdTrait
 {
     public static function bootFillTeamIdTrait(): void
     {
-        Nova::whenServing(function (NovaRequest $request) {
+        Nova::whenServing(function (): void {
             if (auth()->check()) {
-                static::creating(function ($model) {
-                    $model->team_id = auth()->user()->currentTeam()->value('id');
+                static::creating(function ($model): void {
+                    if (is_null($model->team_id)) {
+                        $teamId = auth()->user()?->currentTeam()?->value('id');
+                        if (!is_null($teamId)) {
+                            $model->team_id = $teamId;
+                        }
+                    }
                 });
             }
         });
-    }
-
-    public function scopeActiveTeam(Builder $query, string $table): void
-    {
-        if (auth()->check()) {
-            if (auth()->user()->isSuperAdmin()) {
-                $query->withTrashed();
-            } else {
-                $query->where(
-                    $table . '.team_id',
-                    auth()->user()->currentTeam()->value('id')
-                );
-            }
-        }
     }
 }

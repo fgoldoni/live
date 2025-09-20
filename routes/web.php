@@ -2,13 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Laravel\Nova\Contracts\ImpersonatesUsers;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'otp.verified'])
+    ->middleware(['auth'])
     ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
@@ -21,3 +24,9 @@ Route::middleware(['auth'])->group(function () {
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/webhook.php';
+
+Route::get('/impersonation', function (Request $request, ImpersonatesUsers $impersonator) {
+    if ($impersonator->impersonating($request)) {
+        $impersonator->stopImpersonating($request, Auth::guard(), User::class);
+    }
+});

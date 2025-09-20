@@ -3,6 +3,7 @@
 namespace Core\Traits\Database;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 
 trait Migration
 {
@@ -34,6 +35,20 @@ trait Migration
     public function addAvatar(Blueprint $table): void
     {
         $table->string('avatar', 2048)->nullable();
+    }
+
+    /**
+     * Create fields common to seo.
+     */
+    public function addSlug(Blueprint $table): void
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            $table->jsonb('slug')->nullable();
+        } else {
+            $table->json('slug')->nullable();
+        }
     }
 
     public function addLogo(Blueprint $table): void

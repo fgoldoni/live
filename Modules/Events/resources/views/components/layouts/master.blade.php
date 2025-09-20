@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -28,3 +33,4 @@
         {{-- {{ module_vite('build-events', 'resources/assets/js/app.js') }} --}}
     </body>
 </html>
+<?php 

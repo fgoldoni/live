@@ -39,6 +39,7 @@ return [
     'global_permissions' => [
         'impersonate',
         'nova',
+        'manager',
     ],
 
     'role_ability_map' => [
@@ -55,14 +56,19 @@ return [
                 'attach', 'attachAny', 'detach', 'detachAny',
                 'invite', 'transferOwnership',
             ],
+            Event::class => [
+                'viewAny', 'view', 'create', 'update', 'delete',
+            ],
             User::class => [
                 'viewAny', 'view', 'create', 'update', 'delete', 'deleteAny', 'restore', 'restoreAny',
             ],
         ],
         'Seller' => [
             Team::class => [
-                'viewAny', 'view',
-                'leave', 'acceptInvite', 'declineInvite',
+                'viewAny', 'view', 'leave', 'acceptInvite', 'declineInvite',
+            ],
+            Event::class => [
+                'viewAny', 'create', 'update', 'delete',
             ],
             User::class => [
                 'viewAny', 'view',
@@ -81,7 +87,7 @@ return [
 
     'role_global_permissions' => [
         'Super Admin' => ['*'],
-        'Manager'     => ['impersonate', 'nova'],
+        'Manager'     => ['impersonate', 'manager', 'nova'],
         'Seller'      => [],
         'User'        => [],
     ],
