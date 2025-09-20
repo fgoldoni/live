@@ -198,8 +198,8 @@ return [
     */
 
     'impersonation' => [
-        'started' => '/nova',
-        'stopped' => '/',
+        'started' => '/admin',
+        'stopped' => '/admin',
     ],
 
 ];
